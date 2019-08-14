@@ -1,0 +1,13 @@
+---
+title: 翻译计划-React设计模式初探
+date: 2019-08-02 15:13:32
+tags: [ 翻译计划 ]
+---
+我使用React到现在已经有好几年了，并且最近一些经常出现的模式引起了我的注意。在这篇文章中，我会回顾这些在日常工作中常用的React模式。
+作为例程，我将会创建一个从
+## 常用React模式
+在日常工作中，每天写的组件常常都是纯渲染组件或带一些逻辑的组件。因此这引出了第一种模式，也是最简单的模式：
+###
+
+### 原文链接
+(https://lucasmreis.github.io/blog/simple-react-patterns/)[https://lucasmreis.github.io/blog/simple-react-patterns/]
