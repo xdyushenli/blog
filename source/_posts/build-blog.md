@@ -54,9 +54,10 @@ Hexo是基于[Node.js](https://nodejs.org/en/download/)。Node.js可从官网下
 > hexo g&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;#生成博客静态网页
 > hexo d&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;#上传博客至github
 
-3. 如何使Hexo编译时跳过某些文件？答：打开`_config.yaml`文件，找到`skip_render`选项。使用时应注意，此选项是以`source文件夹`为相对路径的。
+3. 如何使Hexo编译时跳过某些文件？答：打开`_config.yaml`文件，找到`skip_render`选项。使用时应注意，此选项是以`source文件夹`为相对路径的。虽然文档上说可以使用正则进行匹配，但是我没找到让设置起作用的方法。
 > skip_render: .html # 跳过所有html文件
 > skip_render: [.html, *.css] # 跳过所有html和css文件
+> skip_render: "_posts/test-post.md" # 这将会忽略对 'test-post.md' 的渲染
 
 4. 博文中出现的所有的代码必须采用四个空格缩进的语法或三个`\``包裹，不然会出现编译错误！
 
