@@ -7,8 +7,8 @@ title: 敝舍
 subtitle:
 description:
 keywords:
-author: liyushen
-language:
+author: Mett Li
+language: zh-Hans
 timezone:
 
 # URL
@@ -26,7 +26,7 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
-skip_render:
+skip_render: [ _post/vue.md, _post/ssr.md, _post/flash-cards.md ]
 
 # Writing
 new_post_name: :title.md # File name of new posts

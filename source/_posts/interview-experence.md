@@ -10,6 +10,7 @@ tags: [ 面试 ]
 * 使用 `data-` 属性的好处是什么？
 * 请描述 `cookies`、`sessionStorage` 和 `localStorage` 的区别。
 * 请解释 `<script>`、`<script async>` 和 `<script defer>` 的区别。
+
 ## CSS相关问题
 * 请解释浮动 (Floats) 及其工作原理。
 * 描述z-index和叠加上下文是如何形成的。

@@ -10,4 +10,4 @@ tags: [ 翻译计划 ]
 ###
 
 ### 原文链接
-(https://lucasmreis.github.io/blog/simple-react-patterns/)[https://lucasmreis.github.io/blog/simple-react-patterns/]
+(React设计模式)[https://lucasmreis.github.io/blog/simple-react-patterns/]
