@@ -26,14 +26,7 @@ archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
-skip_render: [
-  _posts/0flash-cards.md,
-  _posts/0interview-experence.md,
-  _posts/0react-children-map.md,
-  _posts/0react-pattern.md,
-  _posts/0ssr.md,
-  _posts/0vue.md
-]
+skip_render: _posts\/0*
 
 # Writing
 new_post_name: :title.md # File name of new posts
