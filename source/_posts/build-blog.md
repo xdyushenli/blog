@@ -64,3 +64,5 @@ Hexo是基于[Node.js](https://nodejs.org/en/download/)。Node.js可从官网下
 
 5. 使用`hexo d`命令部署后部署无效，且无法在`github`上找到相关的`commit`记录？
 > 删除根目录下的`.deploy_git`文件夹和`public`文件夹，再重新提交。
+
+6. 如何插入图片?答：使用如下语法`![](/images/img.png)`即可。在`hexo`中, 图片引用根目录是`source`文件夹。

@@ -91,3 +91,20 @@ export function scheduleUpdateOnFiber(
   }
 }
 ```
+# batchedUpdates
+```js
+export function batchedUpdates(fn, bookkeeping) {
+  if (isInsideEventHandler) {
+    // If we are currently inside another batch, we need to wait until it
+    // fully completes before restoring state.
+    return fn(bookkeeping);
+  }
+  isInsideEventHandler = true;
+  try {
+    return batchedUpdatesImpl(fn, bookkeeping);
+  } finally {
+    isInsideEventHandler = false;
+    finishEventHandler();
+  }
+}
+```
