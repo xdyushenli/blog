@@ -65,6 +65,7 @@ socket.socket([family[, type[, protocol]]])
 实现如下([示例地址](https://github.com/xdyushenli/Computer-Network-A-Top-Down-Approch/tree/master/HTTP))：
 ```python
 from socket import *
+import os
 
 # 构造HTTP报文
 def generateHTTPResponse(response_start_line, response_header, response_body):
@@ -88,8 +89,10 @@ while True:
         # 获取请求的文件路径
         path = http_message.split(' ')[1]
         if (path == '/' or path == '/index.html'):
+            # 获取当前文件所在目录
+            root_dir = os.path.dirname(__file__)
             # 读取文件
-            f = open('C:\\Users\\Admin\\Desktop\\Computer-Network-A-Top-Down-Approch\\HTTP\\index.html')
+            f = open(root_dir + '\\index.html')
             output_data = f.read()
             
             # HTTP文件报文
