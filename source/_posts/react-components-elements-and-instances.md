@@ -48,7 +48,7 @@ class Form extends TraditionalObjectOrientedView {
 
 # 元素（Elements）
 在 React 中, 元素（Elements）就是为了解决上述痛点而生的。**一个元素的本质是一个普通对象, 元素的作用是描述它所代表的DOM 节点或组件实例**。一般来说, 元素只包含三种信息。一是组件类型（比如 `Button`）, 二是组件本身的属性（比如 `color`）, 三是组件内部所包含的子组件。
-一个元素并不是真正的实例。恰恰相反, 它只向 React 传达一种希望在屏幕上呈现什么的信息。在元素上, 你不能调用任何方法, 因为它只是一个具有两个字段的不可变描述对象：`type: (string | ReactClass)` 和 `props: Object`[1]()。todo
+一个元素并不是真正的实例。恰恰相反, 它只向 React 传达一种希望在屏幕上呈现什么的信息。在元素上, 你不能调用任何方法, 因为它只是一个具有两个字段的不可变描述对象：`type: (string | ReactClass)` 和 `props: Object`[1](https://xdyushenli.github.io/2019/12/17/react-components-elements-and-instances/#%E6%B3%A8%E9%87%8A)。
 
 ## DOM元素
 当一个元素的 `type` 字段值是一个字符串时, 这个元素就代表了以该字符串为标签名的 DOM 节点, 而 `props` 字段相当于这个元素上的属性（Attributes）。那么 React 便会根据这些信息进行渲染。举个例子：
@@ -167,7 +167,7 @@ React 会询问 `Button` 应该如何渲染, `Button` 会返回如下元素：
 }
 ```
 React 会重复这个过程, 直到所有的元素都变为以 `type` 值为 DOM 标签的元素为止。
-还记得上面 `Form` 的例子吗? 有了 React 之后, 它可以重写为如下代码[1]()todo：
+还记得上面 `Form` 的例子吗? 有了 React 之后, 它可以重写为如下代码[1](https://xdyushenli.github.io/2019/12/17/react-components-elements-and-instances/#%E6%B3%A8%E9%87%8A)：
 ```js
 const Form = ({ isSubmitted, buttonText }) => {
   if (isSubmitted) {
@@ -250,7 +250,7 @@ class Button extends React.Component {
 }
 ```
 当一个组件使用定义为类时, 与函数组件相比, 它的功能更加强大。它可以储存一些局部状态, 并且在实例创建或销毁对应的 DOM 节点时执行一些自定义逻辑。
-函数组件功能较少, 但是更加简洁。函数组件可以看做只有 `render()` 方法的类组件。除非你需要一些只能在类组件中才能使用的特性, 否则我们推荐你使用函数组件[2]()todo。
+函数组件功能较少, 但是更加简洁。函数组件可以看做只有 `render()` 方法的类组件。除非你需要一些只能在类组件中才能使用的特性, 否则我们推荐你使用函数组件[2](https://xdyushenli.github.io/2019/12/17/react-components-elements-and-instances/#%E6%B3%A8%E9%87%8A)。
 **不管是函数组件还是类组件, 对于 React 来说, 它们本质上都是组件。组件将 props 作为输入, 将对应元素作为输出。**
 
 # 自上而下的调度（Top-Down Reconciliation）
