@@ -1,7 +1,7 @@
 ---
 title: React.Children.map源码解析
 date: 2019-10-11 18:21:10
-tags: [ React ]
+tags: [ react ]
 ---
 # 简介
 `React.Children`提供了用于处理`this.props.children`不透明数据结构的实用方法。而`React.Children.map`是其中的一种。
