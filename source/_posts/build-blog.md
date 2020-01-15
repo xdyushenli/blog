@@ -66,3 +66,14 @@ Hexo是基于[Node.js](https://nodejs.org/en/download/)。Node.js可从官网下
 > 删除根目录下的`.deploy_git`文件夹和`public`文件夹，再重新提交。
 
 6. 如何插入图片?答：使用如下语法`![](/images/img.png)`即可。在`hexo`中, 图片引用根目录是`source`文件夹。
+
+7. 如何给文章中的标题前自动加上序号?
+答: 安装 `hexo-heading-index` 插件, 并在顶层 `config.yaml` 中添加如下配置。如果不起作用, 就先使用 `hexo clean` 命令清理后再重新生成文件。
+```
+heading_index:
+  enable: true
+  index_styles: "{1} {1} {1} {1} {1} {1}"
+  connector: "."
+  global_prefix: ""
+  global_suffix: ". "
+```

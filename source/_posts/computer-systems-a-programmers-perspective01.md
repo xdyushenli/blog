@@ -1,5 +1,8 @@
 ---
-title: computer-systems-a-programmers-perspective01
+title: 深入理解计算机系统读书笔记（一）
 date: 2019-12-21 20:58:55
-tags:
+tags: [ 计算机系统 ]
 ---
+我们将沿着 hello.c 的生命周期, 逐步引入一些关键概念、专业术语和组成部分。这些内容将在之后的章节中逐步展开。
+# 信息就是位 + 上下文
+
