@@ -9,13 +9,13 @@ tags: [ 算法 ]
 * [冒泡排序](#冒泡排序)
 * [选择排序](#选择排序)
 * [插入排序](#插入排序)
+* [希尔排序](#希尔排序)
 * [归并排序](#归并排序)
 * [快速排序](#快速排序)
 * [堆排序](#堆排序)
-* [桶排序](#桶排序)
-* [希尔排序](#希尔排序)
-* [基数排序](#基数排序)
 * [计数排序](#计数排序)
+* [桶排序](#桶排序)
+* [基数排序](#基数排序)
 
 ## 排序算法的稳定性
 排序算法的稳定性是指, 能保证两个相等的元素在排序前和排序后的相对顺序是相同的。
@@ -127,6 +127,42 @@ function insertSort(arr) {
 * **时间复杂度: O(n^2)**
 * **空间复杂度: O(1)**
 * 插入排序属于**稳定**的排序算法, 是原地排序。
+
+# 希尔排序
+## 思路
+希尔排序可以看做是插入排序的一种变种。
+不管是冒泡排序还是插入排序, 比较的都是相邻元素之间的大小。如果一个很大的元素处于很靠前的位置, 那么需要移动很多次才能到达它应该在的位置。使用希尔排序, 通过让大元素与不相邻的元素进行比较, 减少其的移动次数, 从而提高时间效率。
+希尔排序的思想是, 先让相隔为 gap 的元素彼此之间有序 (此排序过程使用插入排序), 之后逐渐缩小间隔 gap 值, 当 gap = 1 时, 整个数组便是有序的了。
+![希尔排序](/images/sorting-algorithm/03.jpg)
+需要注意的是, **对各个分组进行插入的时候并不是先对一个组排序完了再来对另一个组排序, 而是轮流对每个组进行排序。**
+## 实现
+```js
+function shellSort(arr) {
+    if(arr.length <= 1) {
+        return arr;
+    }
+
+    // 不断减小 gap 直至为 1
+    for (let gap = arr.length >> 1; gap > 0; gap = gap >> 1) {
+        // 对局部进行排序
+        for (let i = gap; i < arr.length; i++) {
+            // 遍历 arr[i] 所属的组中在 arr[i] 之前的元素, 将 arr[i] 放在合适的位置
+            for (let j = i - gap; j >= 0; j -= gap) {
+                if (arr[i] < arr[j]) {
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            }
+        }
+    }
+
+    return arr;
+}
+```
+
+## 总结
+* **时间复杂度: O(nlgn)**
+* **空间复杂度: O(1)**
+* 希尔排序属于**不稳定**的排序算法, 是原地排序。
 
 # 归并排序
 ## 思路
@@ -286,40 +322,240 @@ function quickSort(arr, left = 0, right = arr.length - 1) {
 
 # 堆排序
 ## 思路
-## 实现
-## 总结
-* **时间复杂度: O(n^2)**
-* **空间复杂度: O(1)**
-* 选择排序属于**不稳定**的排序算法, 是原地排序。
+堆有两种, 堆顶是最大值的堆被称为`大顶堆`, 堆顶是最小值的堆被称为`小顶堆`。
+堆排序就是把大顶堆的堆顶元素和最后一个元素交换位置, 之后再把剩余元素继续组成大顶堆, 把堆顶与倒数第二个元素交换位置, 然后重复这一过程。
 
-# 桶排序
-## 思路
 ## 实现
-## 总结
-* **时间复杂度: O(n^2)**
-* **空间复杂度: O(1)**
-* 选择排序属于**不稳定**的排序算法, 是原地排序。
+```js
+function heapSort(arr) {
+    if(arr.length <= 1) {
+        return arr;
+    }
+    
+    // 构建大顶堆
+    for (let i = arr.length >> 1; i >= 0; i--) {
+        downAdjust(arr, i, arr.length - 1);
+    }
 
-# 希尔排序
-## 思路
-## 实现
-## 总结
-* **时间复杂度: O(n^2)**
-* **空间复杂度: O(1)**
-* 选择排序属于**不稳定**的排序算法, 是原地排序。
+    // 进行堆排序
+    for (let i = arr.length - 1; i >= 1; i--) {
+        // 把堆顶元素与最后一个元素交换
+        [arr[0], arr[i]] = [arr[i], arr[0]];
+        // 继续用剩余元素组成大顶堆
+        downAdjust(arr, 0, i - 1);
+    }
 
-# 基数排序
-## 思路
-## 实现
+    return arr;
+}
+
+function downAdjust(arr, parent, len) {
+    //临时保存要下沉的元素
+    let temp = arr[parent];
+    //定位左孩子节点的位置
+    let child = 2 * parent + 1;
+    //开始下沉
+    while (child <= len) {
+        // 如果右孩子节点比左孩子大，则定位到右孩子
+        if (child + 1 <= len && arr[child] < arr[child + 1])
+            child++;
+        // 如果孩子节点小于或等于父节点，则下沉结束
+        if (arr[child] <= temp) break;
+        // 父节点进行下沉
+        arr[parent] = arr[child];
+        parent = child;
+        child = 2 * parent + 1;
+    }
+    arr[parent] = temp;
+}
+```
 ## 总结
-* **时间复杂度: O(n^2)**
+* **时间复杂度: O(nlgn)**
 * **空间复杂度: O(1)**
-* 选择排序属于**不稳定**的排序算法, 是原地排序。
+* 堆排序属于**不稳定**的排序算法, 是原地排序。
+* 堆这种数据结构存在的意义?
+如果需要的仅仅是一个序列, 使用排序很快就可以完成。但是, 如果我们面对的是一个随时会更新的序列, 那么我们既需要把更新的元素正确的插入序列中, 也需要在序列被划分为任意子集时可以得出子集的最大值和最小值。这个时候, 堆便能派上用场啦。
 
 # 计数排序
 ## 思路
+计数排序的基本思想是: 把数组元素作为数组的下标, 原数组中每有一个对应的数组元素, 就在新数组中以此元素下标的、对应的元素上加一。最后统计新数组各个元素的值, 然后创建新数组。
+
 ## 实现
+```js
+function countSort(arr) {
+    if(arr.length <= 1) {
+        return arr;
+    }
+
+    let count = [];
+    let ans = [];
+
+    // 统计原数组中各元素出现的次数
+    for(let i = 0; i < arr.length; i++) {
+        let index = arr[i];
+        if(count[index] !== undefined) {
+            count[index]++;
+        } else {
+            count[index] = 1;
+        }
+    }
+
+    // 创建新数组
+    for(let i = 0; i < count.length; i++) {
+        if(arr[i] !== undefined) {
+            while(arr[i] > 0) {
+                ans.push(i);
+                arr[i]--;
+            }
+        }
+    }
+
+    return ans;
+}
+```
+
 ## 总结
-* **时间复杂度: O(n^2)**
-* **空间复杂度: O(1)**
-* 选择排序属于**不稳定**的排序算法, 是原地排序。
+* **时间复杂度: O(n)**
+* **空间复杂度: O(n)**
+* 计数排序属于**不稳定**的排序算法, 不是原地排序。
+* 计数排序有**两个缺陷**: 一个是如果原数组最大值和最小值相差很大, 那么需要的额外空间也很大, 并且中间会有许多空白, 造成不必要的浪费。二是如果原数组中的元素不是正整数, 那么就无法使用该方法。
+
+# 桶排序
+## 思路
+桶排序的基本思路是, 将最大值和最小值中间数等分为几个区间, 每个区间称为桶。将数组元素放入桶中, 每个桶中都是有序的。最后把各个桶之间汇总起来, 形成有序的数组。
+![桶排序](/images/sorting-algorithm/04.jpg)
+
+## 实现
+```js
+function bucketSort(arr) {
+    if(arr.length <= 1) {
+        return arr;
+    }
+
+    // 查找最大值和最小值
+    let max = arr[0];
+    let min = arr[0];
+
+    for(let ele of arr) {
+        if(ele < min) {
+            min = ele;
+        } else if(ele > max) {
+            max = ele;
+        }
+    }
+
+    // 创建容量为 5 的桶
+    let buckets = [];
+
+    // 将原数组元素放入桶中
+    for(let ele of arr) {
+        // 注意: 若桶的容量为 n, 那么除的量就应该为 n - 2
+        let bucketIndex = Math.floor((ele - min) / 3);
+
+        if(buckets[bucketIndex] === undefined) {
+            buckets[bucketIndex] = [ele];
+        } else {
+            let bucket = buckets[bucketIndex];
+            let index = 0;
+
+            while(bucket[index] < ele && index < bucket.length) {
+                index++;
+            }
+
+            bucket.splice(index, 0, ele);
+        }
+    }
+
+    // 创建新数组
+    let ans = [];
+
+    for(bucket of buckets) {
+        ans = ans.concat(bucket);
+    }
+
+    return ans;
+}
+```
+
+## 总结
+* **时间复杂度: O(n)**
+* **空间复杂度: O(n)**
+* 桶排序属于**稳定**的排序算法, 不是原地排序。
+
+# 基数排序
+## 思路
+基数排序的基本思路是: 先按照个位数来排序, 再按照十位数来排序, 然后是百位数、千位数等, 排到最高位的时候, 就是一组有序的元素了。在各个位进行排序时, 是使用桶来进行排序的。
+
+![基数排序](/images/sorting-algorithm/05.webp)
+
+## 实现
+```js
+function radixSort(arr) {
+    if (arr.length <= 1) {
+        return arr;
+    }
+
+    // 找出最高位
+    let maxRadix = 1;
+    for (let ele of arr) {
+        let currentEle = ele;
+        let currentRadix = 1;
+
+        while (currentEle >= 10) {
+            currentEle /= 10;
+            currentRadix++;
+        }
+
+        if (currentRadix > maxRadix) {
+            maxRadix = currentRadix;
+        }
+    }
+
+    // 创建容量为 10 的桶
+    let buckets = [];
+
+    // 按照不同位进行排序
+    let radix = 0;
+    while (radix < maxRadix) {
+        // 将对应数字放入桶中
+        for (let ele of arr) {
+            let currentEle = ele + '';
+            let bucketIndex = radix == 0 ? currentEle.slice(-1) : currentEle.slice(-radix - 1, -radix) == '' ? 0 : currentEle.slice(-radix - 1, -radix);
+
+            if (buckets[bucketIndex] === undefined) {
+                buckets[bucketIndex] = [ele];
+            } else {
+                let bucket = buckets[bucketIndex];
+                let index = 0;
+
+                while (bucket[index] < ele && index < bucket.length) {
+                    index++;
+                }
+
+                bucket.splice(index, 0, ele);
+            }
+        }
+
+        // 汇总合并后重新放入原数组中
+        arr = [];
+        for (let i = 0; i < 10; i++) {
+            let bucket = buckets[i] === undefined ? [] : buckets[i];
+            arr = arr.concat(bucket);
+            // 清空桶中数据
+            buckets[i] = [];
+        }
+
+        radix++;
+    }
+
+    return arr;
+}
+```
+
+## 总结
+* **时间复杂度: O(n)**
+* **空间复杂度: O(n)**
+* 基数排序属于**不稳定**的排序算法, 不是是原地排序。
+* 基数排序**只对全是正整数的数组有效,** 对于有小数或负数存在的数组无能为力。
+
+# 总结
+![总结](/images/sorting-algorithm/06.png)
