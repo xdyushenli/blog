@@ -70,6 +70,7 @@ React几乎没有外部依赖。通常`require()`都会引用React源码中的�
 
 ## 测试
 我们没有设置单元测试的顶级目录, 而是将它们放置在了所需测试文件的相同目录下的`__test__`的目录之中。
+
 ## warning 和 invariant
 React使用`warning`模块来显示警告信息。
 ```js

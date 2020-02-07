@@ -136,16 +136,6 @@ HTML 中绝大多数标签都是非替换元素。
     transform: translateY(-50%);
 }
 ```
-todo
-### 两列布局
-#### 一列定宽, 另一列自适应
-#### 一列不定宽, 另一列自适应
-
-### 三列布局
-
-### 多列布局
-
-### 全屏布局
 
 ## BFC
 ### 什么是 BFC?
@@ -179,22 +169,22 @@ BFC 的用途如下:
 `flex 布局`又叫`弹性布局`, 是 CSS3 中新增的一种布局方式。flex中的属性可以分为`容器属性`和`项目属性`。容器属性和项目属性各有6个, 共12个。
 
 ### 容器属性
-六个容器属性如下：
-1. `flex-direction`：决定主轴的方向(即项目排列的方向), 默认为 `row`(左端为起点的行排列)。
-2. `flex-wrap`：决定如果一条轴线排不下, 如何进行换行, 默认为 `nowrap`。
-3. `flex-flow`：是 `flex-direction` 和 `flex-wrap` 的简写形式。
-4. `justify-content`：定义了项目在主轴上的对齐方式, 默认为 `flex-start`(左对齐)。
-5. `align-items`：定义项目在竖轴上如何对齐, 默认为 `stretch`(若项目未设置高度, 将占满整个容器)。
-6. `align-content`：定义如果有多条主轴的话, 主轴之间应该如何对齐。
+六个容器属性如下: 
+1. `flex-direction`: 决定主轴的方向(即项目排列的方向), 默认为 `row`(左端为起点的行排列)。
+2. `flex-wrap`: 决定如果一条轴线排不下, 如何进行换行, 默认为 `nowrap`。
+3. `flex-flow`: 是 `flex-direction` 和 `flex-wrap` 的简写形式。
+4. `justify-content`: 定义了项目在主轴上的对齐方式, 默认为 `flex-start`(左对齐)。
+5. `align-items`: 定义项目在竖轴上如何对齐, 默认为 `stretch`(若项目未设置高度, 将占满整个容器)。
+6. `align-content`: 定义如果有多条主轴的话, 主轴之间应该如何对齐。
 
 ### 项目属性
-六个项目属性如下：
-1. `order`：定义项目的排列顺序, 数值越小, 排列越靠前, 默认为 `0`。
-2. `flex-grow`：定义项目的放大比例, 默认为 `0` (即如果存在剩余空间也不放大)。
-3. `flex-shrink`：定义项目的缩小比例, 默认为 `1` (即如果空间不足, 该项目将缩小)。
-4. `flex-basis`：定义在分配多余空间之前, 项目占据主轴空间的大小, 默认为 `auto`(即项目的本来大小)。
-5. `align-self`：允许单个项目有与其他项目不一样的对齐方式, 可覆盖 `align-items`值。
-5. `flex`：该属性是 `flex-grow`、`flex-shrink` 和 `flex-basis` 的简写, 默认为 `0 1 auto`。后两个属性可选。
+六个项目属性如下: 
+1. `order`: 定义项目的排列顺序, 数值越小, 排列越靠前, 默认为 `0`。
+2. `flex-grow`: 定义项目的放大比例, 默认为 `0` (即如果存在剩余空间也不放大)。
+3. `flex-shrink`: 定义项目的缩小比例, 默认为 `1` (即如果空间不足, 该项目将缩小)。
+4. `flex-basis`: 定义在分配多余空间之前, 项目占据主轴空间的大小, 默认为 `auto`(即项目的本来大小)。
+5. `align-self`: 允许单个项目有与其他项目不一样的对齐方式, 可覆盖 `align-items`值。
+5. `flex`: 该属性是 `flex-grow`、`flex-shrink` 和 `flex-basis` 的简写, 默认为 `0 1 auto`。后两个属性可选。
 
 ## transition
 `transition` 的主要用途是让一些交互效果(`transform`、`animation` 或 `hover` 等伪类)变得生动一些。
@@ -204,7 +194,7 @@ BFC 的用途如下:
     transition: CSS属性 过渡时间 效果曲线(默认为 ease)  延迟时间(默认为 0);
     /* 在宽度从原始值到指定值时有一个过渡效果 */
     /* 运动曲线 `ease`, 在 `0.5` 秒内执行完毕, `0.2` 秒后执行过渡 */
-    transition：width .5s ease .2s;
+    transition: width .5s ease .2s;
 }
 ```
 
@@ -213,7 +203,7 @@ BFC 的用途如下:
 `animation` 语法和示例如下:
 ```css
 .example {
-    animation：动画名称 一个周期花费时间 运动曲线(默认 ease)  动画延迟(默认 0)  播放次数(默认 1)  是否反向播放动画(默认 normal)  是否暂停动画(默认 running);
+    animation: 动画名称 一个周期花费时间 运动曲线(默认 ease)  动画延迟(默认 0)  播放次数(默认 1)  是否反向播放动画(默认 normal)  是否暂停动画(默认 running);
     /* 2 秒后开始执行一次 wave 动画, 运动时间 2 秒, 运动曲线为 linear, 并且执行反向动画 */
     animation: wave 2s linear 2s infinite alternate;
 }
@@ -749,7 +739,7 @@ BFC 的用途如下:
 2. 增加尾元素清除浮动。
 ![清浮动](/images/interview-experence/03.jpg)
 `clear` 属性指定一个元素是否可以在它之前的浮动元素旁边, 或者必须向下移动(清除浮动)到这些浮动元素的下面。这就是清浮动的原理。
-3. 为浮动元素创建父级 BFC。如为父元素添加 `overflow：hidden`。
+3. 为浮动元素创建父级 BFC。如为父元素添加 `overflow: hidden`。
 
 ## position
 `position` 的常用值如下:
@@ -772,14 +762,14 @@ BFC 的用途如下:
 浏览器默认 `font-size` 为 `16px`。
 
 ## 常用布局
-1. 水平居中：子元素为行内元素 `inline` + 父元素设置 `text-align: center`。定宽的话就用 `margin: auto`, 不定宽的话就设置 `display: inline` 变成行内元素然后在处理。
-2. 垂直居中：子元素为行内元素, 父元素设置 `line-height` 与高度一致。子元素为块状元素, 子元素设置为绝对定位, 设置 `top` 和 `bottom` 均为 `0`, 父元素设置相对定位。
-3. 单列布局：略
-4. 双列布局：利用 `margin` 在左边或者右边留出一定空白, 然后让另一元素通过 `absolute` 或 `float` 浮动到另一侧, 注意要保证 `margin` 和另一元素宽度一样, 不然会有留白。
-5. 自适应两列布局：父元素固定宽度, 一个元素设置与父元素等宽, 另一元素设置浮动或定位, 宽度不定。这样看上去就是自适应的宽度布局。
-5. 圣杯布局：三列布局, 中间宽度自适应, 两边定宽, 增加父元素宽度, 中间元素宽度变化, 两侧元素不变。父元素定义左右 `padding` 值为左右两列元素的宽度。三元素都`float` 到同一方向, 并加上相对定位。之后定义左侧元素 `margin-left: -100%`, 定位 `left` 为该元素宽度的负值。中间元素定义宽度 `100%`, 右侧元素定义 `margin-right` 和定位 `right` 均为该元素宽度的负值。**注意给父元素清浮动, 且三元素的顺序为 `main` 在最前, 然后是 `left`, 然后是 `right`。**
-6. 双飞翼布局：双飞翼布局与三栏布局大部分一样, 三栏全部 `float` 浮动, 但左右两栏加上负 `margin` 让其跟中间栏 `div` 并排, 先中间后左右, 以形成三栏布局。但不同的是, 其在 `main` 里加了一个子 `div` 用于显示内容, 并通过设置该子 `div` 的 `margin` 值为两测两栏留出空白。父元素无需添加 `padding` 属性, 左右 `div` 也不需要加上相对定位。
-7. `flex` 布局：块状元素使用 `flex`, 行内元素使用 `inline-flex`。`flex` 盒子中, `float`、`clear`、`vertical-align` 失效。
+1. 水平居中: 子元素为行内元素 `inline` + 父元素设置 `text-align: center`。定宽的话就用 `margin: auto`, 不定宽的话就设置 `display: inline` 变成行内元素然后在处理。
+2. 垂直居中: 子元素为行内元素, 父元素设置 `line-height` 与高度一致。子元素为块状元素, 子元素设置为绝对定位, 设置 `top` 和 `bottom` 均为 `0`, 父元素设置相对定位。
+3. 单列布局: 略
+4. 双列布局: 利用 `margin` 在左边或者右边留出一定空白, 然后让另一元素通过 `absolute` 或 `float` 浮动到另一侧, 注意要保证 `margin` 和另一元素宽度一样, 不然会有留白。
+5. 自适应两列布局: 父元素固定宽度, 一个元素设置与父元素等宽, 另一元素设置浮动或定位, 宽度不定。这样看上去就是自适应的宽度布局。
+5. 圣杯布局: 三列布局, 中间宽度自适应, 两边定宽, 增加父元素宽度, 中间元素宽度变化, 两侧元素不变。父元素定义左右 `padding` 值为左右两列元素的宽度。三元素都`float` 到同一方向, 并加上相对定位。之后定义左侧元素 `margin-left: -100%`, 定位 `left` 为该元素宽度的负值。中间元素定义宽度 `100%`, 右侧元素定义 `margin-right` 和定位 `right` 均为该元素宽度的负值。**注意给父元素清浮动, 且三元素的顺序为 `main` 在最前, 然后是 `left`, 然后是 `right`。**
+6. 双飞翼布局: 双飞翼布局与三栏布局大部分一样, 三栏全部 `float` 浮动, 但左右两栏加上负 `margin` 让其跟中间栏 `div` 并排, 先中间后左右, 以形成三栏布局。但不同的是, 其在 `main` 里加了一个子 `div` 用于显示内容, 并通过设置该子 `div` 的 `margin` 值为两测两栏留出空白。父元素无需添加 `padding` 属性, 左右 `div` 也不需要加上相对定位。
+7. `flex` 布局: 块状元素使用 `flex`, 行内元素使用 `inline-flex`。`flex` 盒子中, `float`、`clear`、`vertical-align` 失效。
 
 # JavaScript
 ## 闭包
@@ -838,6 +828,7 @@ BFC 的用途如下:
 * `微任务(Micro Task)`: 包括 Promise、process.nextTick 等。
 
 其中, 不同的任务会进入不同的事件队列。宏任务会进入宏任务队列, 微任务会进入微任务队列。
+应当注意的是, **`new Promise()` 内部的代码相当于同步任务, 会立即执行, 而其后面跟的 `then` 或 `catch` 内的代码会进入微任务队列中。**
 由于存在两个任务队列, 因此上文我们对事件循环的描述便不那么准确了。真正的情况是这样的:
 1. 当事件循环开始时(一般为整体代码开始执行), 主线程会首先执行宏任务队列中的第一个宏任务(即整体代码), 并将执行过程中所有的异步任务分为宏任务和微任务两类, 添加到对应的事件队列中去。
 2. 当第一个宏任务执行完毕后, 主线程会读取微任务队列, 并执行其中所有的微任务。
@@ -847,7 +838,176 @@ BFC 的用途如下:
 ![宏任务与微任务](/images/interview-experence/05.jpg)
 
 ## DOM
+### DOM 中 Node 与 Element 的区别
+简单来说, Node 是一个基类, DOM 中的 Text、Element 和 Comment 都继承于它。**这也意味着所有 Node 的方法和属性都能在 Element 上调用。**Node 代表一个比较大的范围, HTML 中的文本、元素、甚至注释都属于 Node(节点)。
+Element 代表元素, 它只代表 HTML 标签。
+
+### DOM 中 NodeList 与 HTMLCollection 的区别
+`NodeList` 是节点集合(包括文本、图片等)。由 `Node.childNodes` 和 `document.querySelectorAll` 返回。其中 `Node.childNodes` 返回的是实时的, 另一个返回的是静态的。该集合同样可通过方括号语法访问。
+`HTMLCollection` 是元素集合, 可通过方括号语法选中元素, 方括号中数字代表序号, 字符串代表 `id`。`document.forms`、`document.querySelectorAll` 等都返回 `HTMLCollection`。该集合是实时的。
+应当注意的是, **`NodeList` 以及 `HTMLCollection` 都不是标准的数组, 而是伪数组。**
+
+### 常用 DOM API
+#### Node
+```js
+// 属性
+// 节点信息
+Node.nodeName // 返回节点名称, 只读
+Node.nodeType // 返回节点类型的常数值, 只读
+Node.nodeValue // 返回 Text 或 Comment 节点的文本值, 只读
+Node.textContent // 返回当前节点和它的所有后代节点的文本内容, 可读写
+Node.baseURI // 返回当前页面的绝对路径
+// 节点列表
+Node.ownerDocument // 返回当前节点所在的 document 对象
+Node.nextSibling // 返回节点的下一个兄弟节点
+Node.previousSibling // 返回节点的上一个兄弟节点
+Node.parentNode // 返回节点的父节点
+Node.childNodes // 返回节点的子节点列表
+Node.firstChild // 返回节点的第一个子节点
+Node.lastChild // 返回节点的最后一个子节点
+// 元素节点列表
+Node.children // 返回节点的元素节点列表
+Node.firstElementChild // 返回节点的第一个元素子节点
+Node.lastElementChild // 返回节点的最后一个元素子节点
+Node.childElementCount // 返回节点的元素子节点个数
+
+// 操作
+Node.appendChild(node) // 向当前节点在子节点尾部添加节点
+Node.cloneNode(true) // 克隆节点, 默认为 false, 只克隆节点, true的话会克隆节点及其属性和后代
+Node.insertBefore(newNode, oldNode) // 在指定子节点之前插入新节点, 只能在父节点上操作
+Node.removeChild(node) // 删除子节点, 只能在父节点上操作
+Node.remove() // 删除当前节点
+Node.before(...node) // 在当前节点之前插入一个或多个节点
+Node.after(...node) // 在当前节点之后插入一个或多个节点
+Node.replaceWith(node) // 使用指定节点替换当前节点
+```
+#### document
+```js
+// 属性
+// 文档元素信息
+document.defaultView // 返回当前文档所在的 window 对象
+document.documentElement // 返回文档的根节点
+document.body // 返回文档的 body 元素
+document.head // 返回文档的 head 元素
+document.activeElement // 返回文档当前被聚焦的元素
+document.links // 返回文档中所有 a 元素
+document.forms // 返回文档中所有 form 元素
+document.images // 返回文档中所有 img 元素
+document.scripts // 返回文档中所有 script 元素
+document.styleSheets // 返回文档中所有样式表
+// 文档信息
+document.cookie // 返回当前文档的 cookie
+document.title // 返回文档的 title
+document.documentURI // 返回当前文档的网址
+document.URL // 返回当前文档的网址
+document.domain // 返回当前文档的域名
+document.location // 返回 location 对象, 提供当前文档的 URL 信息
+
+// 方法
+// 读写方法
+document.open() // 新建并打开一个文档对象
+document.close() // 关闭 document.open 打开的文档对象
+document.write() // 向 document.open 打开的文档对象中写入内容
+// 查找节点
+document.querySelector(selectors) // 返回第一个匹配的元素节点
+document.querySelectorAll(selectors) // 返回所有匹配的元素节点
+document.getElementsByTagName(tagName) // 返回所有指定 HTML 标签名的元素节点
+document.getElementsByClassName(className) // 返回所有指定类名的元素节点
+document.getElementsByName(name) // 返回所有指定 name 属性值的元素节点
+document.getElementById(id) // 返回拥有指定 id 的元素节点
+document.elementFromPoint(x, y) // 返回位于页面指定位置最上层的元素的子节点
+// 生成节点
+document.createElement(tagName) // 创建有指定标签名的元素节点
+document.createTextNode(text) // 创建文本节点
+document.createAttribute(name) // 创建 attribute 对象
+document.createDocumentFragment() // 创建 DocumentFragment 对象
+// 事件方法
+document.createEvent(type) // 创建指定类型的 event 对象
+document.addEventLinstener(type, linstener, capture) // 在指定元素上注册事件
+document.removeEventLinstener(type, linstener, capture) // 移除指定元素上的事件监听器
+document.dispatchEvent(event) // 触发事件
+```
+#### Element
+```js
+// 属性
+// attribute 相关属性
+Element.attributes // 获取包含当前元素所有属性的列表
+Element.id // 返回当前元素的 id
+Element.tagName // 返回当前元素标签名
+Element.innerHTML // 返回当前元素包含的 HTML 代码
+Element.outerHTML // 返回当前元素自身及其子代的 HTML 代码
+Element.className // 返回元素 class 属性的属性值
+Element.classList // 返回包含当前元素所有 class 属性值的列表
+Element.dataset // 返回当前元素中所有 data-* 属性
+Element.style // 返回当前元素的行内样式
+// 尺寸属性
+// offset
+// 返回元素包含边框和滚动条在内的宽高(width/height + padding + border + 滚动条)
+Element.offsetHeight
+Element.offsetWidth
+// 如果是一般元素, 返回元素相对于文档的坐标, 如果是定位元素, 返回相对于祖先元素的坐标
+Element.offsetLeft
+Element.offsetTop
+// client
+// 与 offset 类似, 返回元素宽高, 但不包括边框和滚动条(width/height + padding)
+Element.clientHeight
+Element.clientWidth
+// 返回元素的内边距的外边缘和他的边框的外边缘的水平距离和垂直距离, 通常这些值就等于左边和上边的边框宽度
+Element.clientLeft
+Element.clientTop
+// scroll
+// 这两个属性是元素的内容区域加上内边距, 再加上任何溢出内容的尺寸, 如果没有溢出时, 这些属性与 clientWidth 和 clientHeight 是相等的。
+Element.scrollHeight
+Element.scrollWidth
+// 这两个属性可写, 用于指定滚动条的位置
+Element.scrollLeft 
+Element.scrollTop
+
+// 节点相关属性
+Element.children // 返回当前元素所有子元素
+Element.childElementCount // 返回当前元素子元素节点的个数
+Element.firstElementChild // 返回当前元素第一个子元素节点
+Element.lastElementChild // 返回当前元素最后一个子元素节点
+Element.nextElementsSibling // 返回当前元素下一个兄弟元素节点
+Element.previousElementSibling // 返回当前元素上一个兄弟节点元素
+Element.offsetParent // 返回当前元素节点的最靠近的、并且 position 属性不等于 static 的父元素
+
+// 方法
+// 位置方法
+Element.getBoundingClientRect() // 返回元素大小及其相对于视口的位置
+// 属性方法
+Element.getAttribute(name) // 获取指定属性值
+Element.setAttribute(name, value) // 设置属性值
+Element.removeAttribute(name) // 移除属性值
+Element.hasAttribute(name) // 返回布尔值, 判断元素是否有某个属性
+// 查找方法
+Element.querySelector(selector) // 返回第一个匹配的子元素节点
+Element.querySelectorAll(selector) // 返回所有匹配的子元素节点
+Element.getElementsByTagName(name) // 返回所有拥有指定标签名的子元素节点
+Element.getElementsByClassName(name) // 返回所有拥有指定类名的子元素节点
+// 事件方法
+Element.addEventLinstener(type, linstener, capture) // 为当前元素注册事件
+Element.removeEventListener(type, linstener, capture) // 移除当前元素上的事件监听器
+Element.dispatchEvent(event) // 触发事件
+// 其他
+Element.scrollIntoView() // 将窗口滚动至当前元素可见的区域
+Element.insertAdjacentHTML(where, HTMLString) // 在指定位置添加 HTML 节点
+Element.insertAdjacentHTML('beforeBegin', HTMLString) // 在该元素前插入  
+Element.insertAdjacentHTML('afterBegin', HTMLString) // 在该元素第一个子元素前插入 
+Element.insertAdjacentHTML('beforeEnd', HTMLString) // 在该元素最后一个子元素后面插入 
+Element.insertAdjacentHTML('afterEnd', HTMLString) // 在该元素后插入
+Element.remove() // 将当前元素从文档中移除
+Element.focus() // 聚焦当前元素
+```
+关于 `Element.getBoundingClientRect()`, 该方法返回一个包含 `left`、top、right、bottom、width 和 height 的对象, 单位为 `px`。计算方法如下:
+![Element.getBoundingClientRect()方法的返回值](/images/interview-experence/06.png)
+
+### 如何修改页面内容?
 todo
+### 如何绑定事件?
+### 当数据量变大之后, 如何进行优化?
+### DOM 树的遍历
+
 ## 跨域问题
 ### 为什么会有跨域问题?
 这就要说到浏览器`同源策略`了。
@@ -914,6 +1074,24 @@ JavaScript 负责将请求发送到代理服务器, 之后代理服务器发送�
 * 以 `/\d{2, 5}/g` 为例, 贪婪匹配指其会尽可能多的匹配数字, 比如有 6 个数字, 那我就要 5 个, 有 3 个就要 3 个, 反正越多越好, 追求范围的上限。
 * 以 `/\d{2, 5}?/g` 为例, 惰性匹配是指尽可能少的匹配, 只要你有 2 个数字, 匹配就结束了, 一个都不多要, 追求范围的下限。
 * 分支结构是惰性的, 如果前面的模式匹配上了, 就不会再尝试后面的模式。
+* 常用字符组:
+ * `\d`: 即 `[0-9]`。表示是一位数字。记忆方式: 其英文是 `digit`(数字)。
+ * `\D`: 即 `[^0-9]`。表示除数字外的任意字符。
+ * `\w`: 即 `[0-9a-zA-Z_]`。表示数字、大小写字母和下划线。记忆方式: `w` 是 `word` 的简写, 也称单词字符。
+ * `\W`: 是`[^0-9a-zA-Z_]`。非单词字符。
+ * `\s`: 是 `[ \t\v\n\r\f]`。表示空白符, 包括空格、水平制表符、垂直制表符、换行符、回车符、换页符。记忆方式: `s` 是 `space character` 的首字母。
+ * `\S`: 是 `[^ \t\v\n\r\f]`, 非空白符。
+ * `.`: . 即 `[^\n\r\u2028\u2029]`。通配符, 表示几乎任意字符。换行符、回车符、行分隔符和段分隔符除外。记忆方式: 想想省略号`...`中的每个点, 都可以理解成占位符, 表示任何类似的东西。
+ * 匹配任意字符: 可以使用 `[\d\D]`、`[\w\W]`、`[\s\S]` 和 `[^]` 中任何的一个。
+
+* 常用量词:
+ * `{m, }`: 表示至少出现 m 次。
+ * `{m}`: 等价于 `{m, m}`, 表示出现 m 次。
+ * `?`: 等价于 `{0, 1}`, 表示出现或者不出现。记忆方式: 问号的意思表示, 有吗?
+ * `+`: 等价于 `{1,}`, 表示出现至少一次。记忆方式: 加号是追加的意思, 得先有一个, 然后才考虑追加。
+ * `*`: 等价于` {0,}`, 表示出现任意次, 有可能不出现。记忆方式: 看看天上的星星, 可能一颗没有, 可能零散有几颗, 可能数也数不过来。
+
+* 惰性匹配量词: `{m, n}?`、`{m, }?` 、`??`、`+?` 和 `*?`。
 
 ### 正则表达式位置匹配攻略
 * 正则表达式的位置匹配, 匹配的是字符之间的空间。
@@ -925,6 +1103,13 @@ var result = "12345678".replace(/(?=(\d{3})+)/g, ',');
 // '12,345,678'
 var result = "12345678".replace(/(?=(\d{3})+$)/g, ',');
 ```
+* 常用位置匹配字符:
+ * `^`: 
+ * `$`: 
+ * `\b`: 
+ * `\B`: 
+ * `(?=p)`: 
+ * `(?!p)`: 
 
 ### 正则表达式括号的作用
 * 括号提供了分组, 以便于我们之后引用它们。
@@ -1060,12 +1245,79 @@ todo
 ## Promise
 todo
 ## 防抖与节流
+### 防抖
+防抖的原理就是: 当一个事件被触发时, 在 n 秒后执行事件处理函数。如果这段等待的时间内, 事件又被触发了, 则以新的事件时间为准。总之就是, 等触发完事件 n 秒内不再触发事件, 才执行一次事件处理函数。
+```js
+function debounce(func, time) {
+    let timeout;
+
+    return function () {
+        let context = this;
+        let result;
+        let args = Array.from(arguments)
+
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            result = func.apply(context, args);
+        }, time)
+
+        return result;
+    }
+}
+```
+
+### 节流
+节流的原理就是: 如果你持续触发事件, 每隔一段时间, 只执行一次事件。
+```js
+// 使用时间戳
+function throttle(func, wait) {
+    let previous = 0;
+
+    return function() {
+        let now = +new Date();
+        let context = this;
+        let args = Array.from(arguments);
+
+        if(now - previous > wait) {
+            func.apply(context, args);
+            previous = now;
+        }
+    }
+}
+
+// 使用定时器
+function throttle(func, wait, ...args) {
+    let timeout;
+    let previous = 0;
+
+    return function() {
+        context = this;
+
+        if(!timeout) {
+            timeout = setTimeout(function() {
+                timeout = null;
+                func.apply(context, args)
+            }, wait)
+        }
+    }
+}
+```
+
+## 值引用和地址引用
+简单值和对象的存储方式是一样的嘛? 栈内存、堆内存?
 todo
 
 # React
 ## diff算法
-### 
+### diff 策略
+React 总的 diff 策略如下:
+1. 对于 DOM 的跨层级移动操作特别少, 可以忽略不计。
+2. 拥有相同类名的两个组件会形成相似的树形结构; 拥有不同类名的两个组件会生成不同的树形结构。
+3. 对于同一层级的一组子节点, 通过唯一 id 进行区分。
 
+下面我们来看看以上策略在 tree diff、component diff 以及 element diff 上的应用。
+todo
+### 
 ## React Fiber
 首先我们要了解到, 要插入一万个 dom 节点, 有两种方式, 一种是插入一万次一个节点, 一种是插入一百次一百个节点。第二种方法更好, 因为这样浏览器便有时间进行代码优化和合并执行。
 jsx是嵌套的天然结构, 在 react 15 中被翻译为递归执行的代码, 因此称 react 15 的调度器为栈调度器。栈调度器代码量少, 浅显易懂, 但缺点是不能随意 break、continue。
@@ -1080,30 +1332,90 @@ todo
 
 # 计算机网络
 ## 浏览器缓存
-todo
 缓存分为两种, 一种为`强缓存`, 一种为`协商缓存`。
 浏览器第一次请求发生后再次请求时, 会先获取该资源缓存的 header 信息, 根据缓存的 header 信息判断是否命中强缓存, 若命中则直接返回缓存文件, 本次请求不会与服务器发送通信, 但状态码为200。
 若没有命中强缓存, 浏览器会发送请求到服务器, 请求会携带资源缓存的 header 中的一些信息, 再由服务器自行判断相关信息是否命中协商缓存, 若命中则返回 304, 返回新的 header 信息以更新缓存中的 header 信息, 并告知浏览器可直接从缓存中获取该资源。否则返回最新的资源内容。
+
+### 强缓存
 与强缓存相关的字段有两个。
-1.expires：是http1.0的标准，其值为一GMT格式的时间字符串，若发送请求的时间在expires之前，那么本地缓存有效，否则就会发送请求到服务器来获取资源。
-2.cache-control：是http1.1的标准。主要是利用该字段的max-age值来判断，该值加上第一次资源请求的时间计算出一个资源有效时间。若发送时间在该资源有效时间之内，则本地缓存有效。否则发送请求。cache-control还有几个常用的值。
-    （1）max-age：是一个数字，用于配合资源请求时间计算资源过期时间。
-    （2）no-cache：不使用本地缓存，需使用协商缓存。先与服务器通信确认资源是否被修改，若之前的响应中存在ETag（服务器生成的资源的唯一标识，资源更改，ETag也更改），则请求时会与服务器验证资源是否被修改，若资源未更改，则可避免重新下载。
-    （3）no-store：禁用浏览器缓存数据，每次请求该资源都需要重新发送请求。
-    （4）public：该资源可被所有用户缓存，包括CDN中间代理服务器和终端用户。
-    （5）private：只允许终端用户缓存，不允许CDN等中级缓存器对其进行缓存。
-注意：若两字段同时存在，cache-control的优先级高于expires。
-协商缓存涉及到的字段主要有两组（四个），这两组都是成对出现的，即第一次请求头带上某个字段，后续的请求会带上相对应的请求字段。
-1.Last-Modified、If-Modified-Since：两者均为GMT格式的时间字符串。第一次请求返回的响应头中含有Last-Modified字段，表示该资源在服务器上最后的修改时间。之后的请求同一资源时，头部中会含有If-Modified-Since字段，其值与Last-Modified一致。服务器收到请求后，将资源的最后修改时间与If-Modified-Since做比较，若修改过，则返回最新的资源，并在响应头中更新Last-Modified的时间。否则即为协商缓存，返回304，浏览器从缓存中加载资源。
-2.Etag、If-None-Match：这两个值为服务器生成的每个资源的唯一标识符，只要资源有变化就改变这个值。判断流程与上一组类似，只不过是通过Etag判断资源是否被修改。不同的是，当服务器返回304时，响应头中还会包含Etag，哪怕资源没有变化。
-注意：Last-Modified与Etag共存的情况下，Etag的优先级高于Last-Modified。
+1. `expires`: 是 http1.0 的标准, 其值为一 GMT 格式的时间字符串, 若发送请求的时间在 expires 之前, 那么本地缓存有效, 否则就会发送请求到服务器来获取资源。
+2. `cache-control`: 是 http1.1 的标准。主要是利用该字段的 max-age 值来判断, 该值加上第一次资源请求的时间计算出一个资源有效时间。若发送时间在该资源有效时间之内, 则本地缓存有效。否则发送请求。`cache-control` 还有几个常用的值。
+ 1. `max-age`: 是一个数字, 用于配合资源请求时间计算资源过期时间。
+ 2. `no-cache`: 不使用本地缓存, 需使用协商缓存。先与服务器通信确认资源是否被修改, 若之前的响应中存在 ETag(服务器生成的资源的唯一标识, 资源更改, ETag 也更改), 则请求时会与服务器验证资源是否被修改, 若资源未更改, 则可避免重新下载。
+ 3. `no-store`: 禁用浏览器缓存数据, 每次请求该资源都需要重新发送请求。
+ 4. `public`: 该资源可被所有用户缓存, 包括CDN中间代理服务器和终端用户。
+ 5. `private`: 只允许终端用户缓存, 不允许CDN等中级缓存器对其进行缓存。
+注意: 若两字段同时存在, `cache-control` 的优先级高于 `expires`。
+
+### 协商缓存
+协商缓存涉及到的字段主要有两组(四个), 这两组都是成对出现的, 即第一次请求头带上某个字段, 后续的请求会带上相对应的请求字段。
+1. `Last-Modified`、`If-Modified-Since`: 两者均为GMT格式的时间字符串。第一次请求返回的响应头中含有 `Last-Modified` 字段, 表示该资源在服务器上最后的修改时间。之后的请求同一资源时, 头部中会含有 `If-Modified-Since` 字段, 其值与 `Last-Modified` 一致。服务器收到请求后, 将资源的最后修改时间与 `If-Modified-Since` 做比较, 若修改过, 则返回最新的资源, 并在响应头中更新 `Last-Modified` 的时间。否则即为协商缓存, 返回 304, 浏览器从缓存中加载资源。
+2. `Etag`、`If-None-Match`: 这两个值为服务器生成的每个资源的唯一标识符, 只要资源有变化就改变这个值。判断流程与上一组类似, 只不过是通过 `Etag` 判断资源是否被修改。不同的是, 当服务器返回 304 时, 响应头中还会包含 `Etag`, 哪怕资源没有变化。
+注意: `Last-Modified` 与 `Etag` 共存的情况下, `Etag` 的优先级高于 `Last-Modified`。
 
 ## 三次握手四次挥手
-todo
+### 三次握手
+三次握手是建立 TCP 连接的过程, 具体如下:
+1. 客户端向服务器发送一 `SYN 报文段(SYN segment)`, **该报文段不包含数据。**客户端会把随机选择的`初始序号(client_isn)`放在报文段的序号字段中。
+2. **在收到 SYN 报文段后, 服务器会为该连接分配缓存及变量。**之后服务器会返回 `SYNACK 报文段(SYNACK segment)`。该报文段 SYN 位被置为1, 确认号为 `client_isn + 1`, 同时服务器会随机选择`初始序号(server_isn)`, 放入报文段的序号字段中。**此报文段仍然不包含数据。**
+3. **在收到 SYNACK 报文段后, 客户端会为该连接分配缓存及变量。**客户端会发送最后一个报文段来告知服务器连接已建立。在该报文段中, 首部的确认字段为 `server_isn + 1`。**在该报文段中可以携带数据。**
+
+### 四次挥手
+四次挥手是拆除 TCP 连接的过程, 具体如下:
+1. 客户端发送`终止报文段(FIN segment)`, 该报文段的 FIN 位被置为 1。
+2. 服务器向客户端发送一个该报文段的确认报文段。
+3. 服务器向客户端发送`终止报文段(FIN segment)`。
+4. **客户端向服务器发送一个该报文段的确认报文段, 同时释放资源。服务器在收到确认后, 也释放资源。**
+
 ## 从输入 url 到显示页面发生了什么?
 todo
 ## cookie、sessionStorage 和 localStorage 有什么区别?
 todo
+
+## 常用 HTTP 请求方法
+
+## 常用状态码
+状态码有五个主要的分类:
+
+| 分类 | 分类描述 |
+| - | ---- |
+| 1** | 信息, 服务器收到请求, 但需要请求者继续操作|
+| 2** | 成功, 操作被成功接收并处理|
+| 3** | 重定向, 需要进一步执行操作已完成请求|
+| 4** | 客户端错误, 请求语法错误或无法完成请求|
+| 5** | 服务器错误, 服务器在处理请求的过程中出现了错误|
+
+状态码具体列表:
+
+|状态码|描述|
+| - | ---- |
+|100| 继续。客户端应继续其请求 |
+|101| 应当切换协议 |
+|200| 请求成功。一般用于 GET 和 POST 请求 |
+|201| 已创建。成功请求并创建了新的资源|
+|202| 已接受。已经接受请求, 但未处理完成|
+|203| 非授权信息。请求成功, 但返回的 meta 信息不在原始的服务器, 而是一个副本 |
+|204| 无内容。服务器成功处理, 但未返回内容, 在未更新网页的情况下, 可确保浏览器继续显示当前文档 |
+|205| 重置内容。服务器处理成功, 用户终端应重置文档视图, 可通过此返回码清除浏览器的表单域 |
+|206| 部分内容.服务器成功处理了部分 GET 请求 |
+|300| 多种选择。请求的资源可包括多个位置, 相应可返回一个资源特征与地址的列表用于用户终端选择 |
+|301| 永久移动。请求的资源已被永久的移动到新 URI, 返回信息会包括新的 URI, 浏览器会自动定向到新 URI。今后任何新的请求都应使用新的 URI 代替 |
+|302| 临时移动。与 301 类似, 但资源只是临时被移动, 客户端应继续使用原有 URI |
+|303| 查看其它地址。与 301 类似。使用GET和POST请求查看 |
+|304| 未修改。所请求的资源未修改, 服务器返回此状态码时, 不会返回任何资源。客户端通常会缓存访问过的资源, 通过提供一个头信息指出客户端希望只返回在指定日期之后修改的资源 |
+|305| 使用代理。所请求的资源必须通过代理访问 |
+|306| 已经被废弃的HTTP状态码 |
+|307| 临时重定向。与302类似。使用GET请求重定向 |
+|401| 客户端请求的语法错误, 服务器无法理解|
+|403| 请求要求用户的身份认证 |
+|404| 服务器理解请求客户端的请求, 但是拒绝执行此请求 |
+|405| 服务器无法根据客户端的请求找到资源 |
+|500| 服务器内部错误, 无法完成请求 |
+|501| 服务器不支持请求的功能, 无法完成请求 |
+|502| 作为网关或者代理工作的服务器尝试执行请求时, 从远程服务器接收到了一个无效的响应 |
+|503| 由于超载或系统维护, 服务器暂时的无法处理客户端的请求。延时的长度可包含在服务器的 Retry-After 头信息中 |
+|504| 充当网关或代理的服务器, 未及时从远端服务器获取请求 |
+|505| 服务器不支持请求的 HTTP 协议的版本, 无法完成处理 |
 
 # 算法
 
@@ -1113,3 +1425,9 @@ todo
 ## 前端性能优化
 todo
 参考资料 https://www.cnblogs.com/xianyulaodi/p/5755079.html
+
+## 思考题
+1. 有 64 匹赛马, 8 条赛道, 每匹赛马速度恒定, 每次比赛只知道名次, 不知道具体时间。最少比赛多少次才能找出前三名?
+答: 至少需要 11 次。首先先分为 8 组, 比赛 8 次。之后把每组的第一名放在一起比一次, 找出所有赛马里的第一名。之后将第一名所在的分组里的第二名和其他组的第一名放在一起比一次, 找出第二名。之后再用相同的方法找出第三名。总共比赛了 8 + 3 = 11 次。
+2. 实现函数, 输入给定的 k 和 n, 给出 x ^ k = n 中的 x 值( k, n 均大于 0)。
+todo

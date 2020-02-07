@@ -1,7 +1,7 @@
 ---
-title: 0react-stack-reconsilers
+title: React 15 中的栈调度器
 date: 2019-12-15 16:27:23
-tags:
+tags: [ react ]
 ---
 # 实现说明
 这部分是一个对于如何实现 Stack Reconciler 的总结。
