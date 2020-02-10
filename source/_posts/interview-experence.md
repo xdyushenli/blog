@@ -782,9 +782,9 @@ BFC 的用途如下:
 ![原型链](/images/interview-experence/02.jpg)
 
 ## Promise
-
+todo
 ## async\await
-
+todo
 ## this
 一般有以下几种情况: 
 * 如果是一般函数, 则其 this 指向其执行时所在的作用域。
@@ -1003,10 +1003,68 @@ Element.focus() // 聚焦当前元素
 ![Element.getBoundingClientRect()方法的返回值](/images/interview-experence/06.png)
 
 ### 如何修改页面内容?
+假设目前 HTML 如下:
+```html
+<ul id='container'></ul>
+```
+需要向其中添加 3 个 `li` 元素, 如何添加?
 todo
 ### 如何绑定事件?
+绑定事件有三种方法:
+1. 使用内联
+2. 使用 `.on` 的方式进行绑定
+3. 使用事件监听 `addEventLinstener` 进行绑定
+
+#### 内联
+语法如下:
+```html
+<p onclick='func()'><p>
+```
+不管是普通函数还是箭头函数, 事件处理函数执行时, this 都指向 window(非严格模式)或 undefined(严格模式)。也就是说, **原函数中可用的变量和常量在事件处理器中同样可用。**
+这种语法附加的监听器可以被使用 `.on` 语法附加的监听器覆盖。
+
+#### .on 语法
+语法如下:
+```js
+document.getElementById('btn').onclick = function () {
+    // ...
+}
+
+// 或者
+// 注意函数名后面不要加括号
+document.getElementById('btn').onclick = func;
+```
+当绑定的函数是普通函数时, 事件处理函数在执行时 this 指向触发事件的元素; 当绑定的函数是箭头函数时, 事件处理函数在执行时 this 指向 window(非严格模式)或 undefined(严格模式)。
+因此, **使用箭头函数时, 原函数中可用的变量和常量在事件处理器中同样可用。**
+
+#### addEventLinstener()
+以上两种方法都有一个很严重的弊端, 那就是**同一个事件只能绑定一个事件处理函数, 如果绑定了多次, 则后绑定的事件处理函数会覆盖之前绑定的事件处理函数。**
+而 `addEventLinstener()` 则不然, MDN 对它的工作原理描述如下:
+> `addEventListener()` 的工作原理是将实现 `EventListener` 的函数或对象添加到调用它的 `EventTarget` 上的指定事件类型的事件侦听器列表中。
+
+从上面的描述可以看出, `addEventLinstener()` 不会覆盖任何绑定的事件, 哪怕是通过内联语法或 `.on` 绑定的事件。
+`addEventLinstener()` 的语法如下:
+```js
+target.addEventListener(type, listener[, options]);
+target.addEventListener(type, listener[, useCapture]);
+
+target.addEventListener('click', function () {
+    // ...
+});
+target.addEventListener('click', func);
+```
+着重需要描述的是 `options` 对象, 它是一个有关 `linstener` 的可选参数对象, 可用的选项如下:
+* `capture`: Boolean, 表示, 表示 `listener` 会在该类型的事件捕获阶段传播到该 EventTarget 时触发。
+* `once`: Boolean, 表示 `listener` 在添加之后最多只调用一次。如果是 true,  `listener` 会在其被调用之后自动移除。
+* `passive`: Boolean, 设置为 true 时, 表示 `listener` 永远不会调用 `preventDefault()`。如果 `listener` 仍然调用了这个函数, 客户端将会忽略它并抛出一个控制台警告。
+
+和 `.on` 事件绑定语法一样, 当绑定的函数是普通函数时, 事件处理函数在执行时 this 指向触发事件的元素; 当绑定的函数是箭头函数时, 事件处理函数在执行时 this 指向 window(非严格模式)或 undefined(严格模式)。
+因此, **使用箭头函数时, 原函数中可用的变量和常量在事件处理器中同样可用。**
+另外, 还有一点非常重要, **`addEventLinstener()` 对任何 DOM 元素都是有效的, 而不仅仅只对 HTML 元素有效。**
+
 ### 当数据量变大之后, 如何进行优化?
 ### DOM 树的遍历
+
 
 ## 跨域问题
 ### 为什么会有跨域问题?
@@ -1303,9 +1361,21 @@ function throttle(func, wait, ...args) {
 }
 ```
 
-## 值引用和地址引用
-简单值和对象的存储方式是一样的嘛? 栈内存、堆内存?
+## js 中的堆内存与栈内存
+首先我们要明白, js 中的变量可以分为两大类: 一种是`简单值`, 又称为`基本数据类型`, **储存时储存的是值,** 有如下 6 种:
+1. Sting
+2. Number
+3. Boolean
+4. null
+5. undefined
+6. Symbol
+
+一种是`复杂值`, 又称为`引用数据类型`, 对象、函数、数组都属于这种类型, **储存时储存的是地址的引用。**
+https://juejin.im/post/5d116a9df265da1bb47d717b
+
+## 前端路由
 todo
+https://juejin.im/post/5d2d19ccf265da1b7f29b05f#heading-7
 
 # React
 ## diff算法
@@ -1328,6 +1398,14 @@ react 16 将内部组件层改为 fiber 这种数据结构。每个 fiber 有三
 在 react 15 中, 每次更新时, 都是从根组件或者 setState 后的组件开始, 更新整个子树。我们唯一能做的, 便是在某个节点中使用 shouldComponentUpdate 断开某一部分的更新, 或是优化 shouldComponentUpdate 的比较效率。
 react 16 则是将虚拟 dom 转化为 fiber 节点, 再将 fiber 节点转化为组件实例或真实 dom。它会规定一个时间段, 在这个时间段内, 能转化多少个 fiber 节点, 就更新多少个 fiber 节点。
 todo
+
+## React 组件通信
+todo
+  
+## 容器组件和展示组件的区别
+`展示组件`是指专门用于展示数据的组件, 内部不含任何业务逻辑。
+`容器组件`是指用于控制展示组件行为, 内部含有业务逻辑的组件。
+
 # Vue
 
 # 计算机网络
@@ -1370,9 +1448,18 @@ todo
 ## 从输入 url 到显示页面发生了什么?
 todo
 ## cookie、sessionStorage 和 localStorage 有什么区别?
-todo
+cookie 是后端通过 `Set-Cookie` 字段设置的, 
 
 ## 常用 HTTP 请求方法
+| 方法 | 描述 |
+| -- | -- |
+| GET | 请求指定的页面信息, 并返回实体主体 |
+| HEAD | 类似于 GET 请求, 只不过返回的响应中没有具体的内容, 用于获取报头 |
+| POST | 向指定资源提交数据进行处理请求(例如提交表单或者上传文件)。数据被包含在请求体中。POST 请求可能会导致新的资源的建立和 / 或已有资源的修改 |
+| PUT | 从客户端向服务器传送的数据取代指定的文档的内容 |
+| DELETE | 请求服务器删除指定的页面 |
+| OPTIONS | 用于获取服务器所支持的通信选项, 比如方法、允许请求的域名等 |
+| TRACE | 回显服务器收到的请求, 主要用于测试或诊断 |
 
 ## 常用状态码
 状态码有五个主要的分类:
@@ -1417,11 +1504,16 @@ todo
 |504| 充当网关或代理的服务器, 未及时从远端服务器获取请求 |
 |505| 服务器不支持请求的 HTTP 协议的版本, 无法完成处理 |
 
+## 内网穿透
+todo 如何进行前后端联调?
 # 算法
 
 # Node
 
 # 其他
+## Linux 操作系统相关
+todo 软连接
+
 ## 前端性能优化
 todo
 参考资料 https://www.cnblogs.com/xianyulaodi/p/5755079.html
@@ -1431,3 +1523,9 @@ todo
 答: 至少需要 11 次。首先先分为 8 组, 比赛 8 次。之后把每组的第一名放在一起比一次, 找出所有赛马里的第一名。之后将第一名所在的分组里的第二名和其他组的第一名放在一起比一次, 找出第二名。之后再用相同的方法找出第三名。总共比赛了 8 + 3 = 11 次。
 2. 实现函数, 输入给定的 k 和 n, 给出 x ^ k = n 中的 x 值( k, n 均大于 0)。
 todo
+
+# Java
+1. 使用静态属性必须以类名做前缀?
+2. 线性表中利用( )存储方式最省时间? 
+3. 在有n个结点的二叉链表中,值为非空的链域的个数为__________。
+4. Java语言中,不考虑反射机制,一个子类显式调用父类的构造器必须用__________关键字。
