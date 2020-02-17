@@ -745,9 +745,13 @@ BFC 的用途如下:
 `position` 的常用值如下:
 * `static`: 默认值。没有定位, 元素出现在正常的流中**(忽略 `top`, `bottom`, `left`, `right` 和 `z-index` 声明)**。
 * `absolute`: 生成绝对定位的元素, 相对于 `static` 定位以外的第一个父元素进行定位。
-* `fixed`: 生成绝对定位的元素, 相对于浏览器窗口进行定位。   
+* `fixed`: 生成绝对定位的元素, 相对于浏览器窗口进行定位。
 * `relative`: 生成相对定位的元素, 相对于其正常位置进行定位。
-* `inherit` 规定从父元素继承 `position` 属性的值。
+* `inherit`: 规定从父元素继承 `position` 属性的值。
+* `sticky`: 可以看出是 `position: relative` 和 `position: fixed` 的结合体。当元素在屏幕内, 表现为 `relative`, 就要滚出显示器屏幕的时候, 表现为 `fixed`。具体的可以看[这个](https://www.zhangxinxu.com/wordpress/2018/12/css-position-sticky/)。
+
+### 绝对定位与 float 的区别?
+todo
 
 ## display
 `display` 的常用值如下:
@@ -782,9 +786,269 @@ BFC 的用途如下:
 ![原型链](/images/interview-experence/02.jpg)
 
 ## Promise
-todo
+Promise 有以下几个特点, 我们一一来看看。
+
+### Promise 的立即执行性
+Promise 对象表示未来某个将要发生的事件。但是在创建 Promise 对象时, 作为 Promise 参数传入的函数会立即执行。
+
+```js
+let p = new Promise((resolve, reject) => {
+    console.log(1);
+    resolve(2);
+})
+
+console.log(3);
+
+p.then((val) => {
+    console.log(val);
+})
+
+console.log(4);
+
+// 打印结果: 1 3 4 2
+```
+
+### Promise 的三种状态
+Promise 其实本质是一个状态机, 有三种状态: `pending`、`resolved` 以及 `rejected`。
+`pending` 状态能改变为 `resolved` 或 `rejected` 状态, 且一经改变后便不能再次改变。**这种状态的改变是不可逆的。**
+
+### 链式调用
+Promise 支持链式调用, 用于链式调用的有三种方法:
+* `then` 方法: Promise 实例具有 `then` 方法。它的作用是为 Promise `实例添加状态改变时的回调函数。then` 方法的第一个参数是 `resolved` 状态的回调函数, 第二个参数(可选)是 `rejected` 状态的回调函数。
+* `catch` 方法: **该方法是 `then(null, rejection)` 或 `then(undefined, rejection)` 的别名,** 用于指定发生错误时的回调函数。
+* `finally` 方法: 该方法用于指定不管 Promise 对象最后状态如何, 都会执行的操作。
+
+以上三个方法最终的返回值都是 Promise 对象。
+在链式调用的过程中, 传入作为参数的函数的返回值被用作创建 Promise 对象, 而这些函数的返回值可以是以下三种情况的一种:
+* 同步值或 `undefined`: 这种情况下, `then` 方法将会返回一个状态为 `resolved` 的 Promise 对象, 且 Promise 对象的值即为返回值。
+* 另一个 Promise 对象: 在这种情况下, `then` 方法将根据这个 Promise 对象的状态和值创建一个新的 Promise 对象返回。
+* 使用 `throw` 抛出的异常: `then` 方法返回一个 `rejected` 状态的 Promise 对象, 值是异常。这种抛出的异常会被 `catch` 方法和 `then` 方法的第二个参数捕获到。
+
+### resolve() 和 reject()
+```js
+let p1 = new Promise(function (resolve, reject) {
+    resolve(Promise.resolve('resolve'));
+});
+
+let p2 = new Promise(function (resolve, reject) {
+    resolve(Promise.reject('reject'));
+});
+
+let p3 = new Promise(function (resolve, reject) {
+    reject(Promise.resolve('resolve'));
+});
+
+p1.then(
+    function fulfilled(value) {
+        console.log('fulfilled: ' + value);
+    },
+    function rejected(err) {
+        console.log('rejected: ' + err);
+    }
+);
+
+p2.then(
+    function fulfilled(value) {
+        console.log('fulfilled: ' + value);
+    },
+    function rejected(err) {
+        console.log('rejected: ' + err);
+    }
+);
+
+p3.then(
+    function fulfilled(value) {
+        console.log('fulfilled: ' + value);
+    },
+    function rejected(err) {
+        console.log('rejected: ' + err);
+    }
+);
+
+// 控制台输出:
+// p3 rejected: [object Promise]
+// p1 fulfilled: resolve
+// p2 rejected: reject
+```
+
+Promise 回调函数的第一个参数 `resolve` 会对传入的参数执行"拆箱"的操作。**当 `resolve` 的参数是一个 Promise 对象时, `resolve` 会"拆箱"获取这个 Promise 对象的状态和值, 但这个过程是异步的!**
+但 Promise 回调函数中的第二个参数 `reject` 不具备"拆箱"的能力, **`reject` 的参数会直接传递给 then 方法的 `rejected` 回调, 无论其中的参数是不是 Promise 对象。**
+
+### 错误捕获
+一般来说, 可以用 `catch` 方法和 `then` 方法的第二个参数来进行错误捕获, 并对错误进行处理。应当注意的是, **错误一经捕获并处理后, `then` 或 `catch` 返回的后续 Promise 对象将恢复正常, 为 `resolved` 状态, 并会被 Promise 执行成功的回调函数处理。**
+
+## Generator
+传统的编程语言, 对于异步编程有一种解决方案, 称为`协程(coroutine)`。意思是多个线程互相协作, 完成异步任务。
+其运行流程大致如下:
+> 第一步, 协程 A 开始执行。
+>
+> 第二步, 协程 A 执行到一半, 进入暂停, 执行权转移到协程 B。
+>
+> 第三步, (一段时间后)协程 B 交还执行权。
+>
+> 第四步, 协程 A 恢复执行。
+
+`Generator` 函数是协程在 ES6 的实现, **最大的特点就是可以交出函数的执行权(即暂停执行)。**
+剩下的注意事项有三点:
+1. `Generator` 函数定义时要使用 `function*` 关键字来进行定义。
+2. 在 `Generator` 函数内部, 可以使用 `yield` 关键字来交出当前代码的执行权, 阻塞剩余代码的运行。
+3. 要想让剩余代码继续运行, 需要调用 `next` 方法。`next` 方法的作用是分阶段执行 `Generator` 函数。该方法返回一个包含 value 属性和 done 属性的对象, value 是 `yield` 关键字后面表达式的值, done 是一个布尔值, 表示 `Generator` 函数是否执行完毕。
+
 ## async\await
+async 函数会将任何返回值都包装为 Promise 对象(**哪怕没有使用 return 关键字!**), 这使得 **async 函数支持链式调用。**
+**await 关键字只能在 async 函数内部使用。**
+await 关键字可以放在任何异步或同步代码之前。
+
+### await 关键字
+当代码执行到 await 关键字时, 就会阻塞当前函数剩下代码的运行, 将运行权交给 await 关键字后面的代码。此时有两种情况:
+1. 后面的代码返回的是 Promise 对象。
+await 关键字会阻塞函数内剩余代码的执行, 直到 Promise 对象 fulfilled 为止, 并将 Promise 中传入 resolve 的值作为 await 表达式的结果返回。
+如果 await 后面的 Promise 的状态是 rejected, 且没有 then 和 catch 来捕捉这一错误, 则这个错误会被抛出, 从而终止代码的运行。
+如果 Promise 对象有 then 方法, 则会执行完 then 方法内的代码, 并将其 return 的值作为 await 表达式的结果返回。
+2. 后面的代码返回的不是 Promise 对象。await 依然会阻塞函数内剩余代码的执行, 会优先执行 await 后面的代码, 并将后面代码的返回值作为 await 表达式的结果返回。
+
+以上行为可以通过如下四段代码展现:
+1. 第一段代码, await 后面跟着的是一个状态最终为 resolved 的 Promise 对象。
+```js
+async function asyncTask() {
+    let result = await task1();
+    console.log('await 表达式的结果是: ' + result);
+    return result;
+}
+
+// resolve 的 Promise 对象
+function task1() {
+    return new Promise((resolve, reject) => {
+        console.log('task 1');
+        resolve(1);
+    })
+}
+
+asyncTask()
+.then((val) => {
+    console.log('最终的返回值是: ' + val)
+})
+// 最终输出结果如下:
+// task 1
+// await 表达式的结果是: 1
+// 最终的返回值是: 1
+```
+
+2. 第二段代码, await 后面是一个最终状态为 rejected 的 Promise 对象。
+```js
+async function asyncTask() {
+    let result = await task2();
+    console.log('await 表达式的结果是: ' + result);
+    return result;
+}
+
+// rejected 的 Promise 对象
+function task2() {
+    return new Promise((resolve, reject) => {
+        console.log('task 2');
+        reject(2);
+    })
+}
+
+asyncTask()
+.then((val) => {
+    console.log('最终的返回值是: ' + val)
+})
+// 最终输出结果如下:
+// task 2
+// Uncaught (in promise) 2
+```
+最终会抛出错误。
+
+3. 第三段代码, await后面跟着的是一个调用了 then 方法的 Promise 对象。
+```js
+async function asyncTask() {
+    let result = await task3();
+    console.log('await 表达式的结果是: ' + result);
+    return result;
+}
+
+// 调用了 then 方法的 Promise 对象
+function task3() {
+    return new Promise((resolve, reject) => {
+        console.log('task 3');
+        // 注意这里是 reject, 调用的是 then 方法的第二个参数
+        reject(3);
+    }).then((val) => {
+        console.log('then 方法的第一个参数');
+        return 4
+    }, (val) => {
+        console.log('then 方法的第二个参数');
+        return 5
+    })
+}
+
+asyncTask()
+.then((val) => {
+    console.log('最终的返回值是: ' + val)
+})
+// 最终输出结果如下:
+// task 3
+// then 方法的第二个参数
+// await 表达式的结果是: 5
+// 最终的返回值是: 5
+```
+无论是 then、catch 还是 finally 方法, 最终的结果都是一样的, 有异曲同工之妙, 自己理解就好。
+
+4. 第四段代码, await 后面跟着的是一个同步任务。
+```js
+async function asyncTask() {
+    let result = await task4();
+    console.log('await 表达式的结果是: ' + result);
+    return result;
+}
+
+// 同步任务
+function task4() {
+    console.log('同步任务');
+    return 6;
+}
+
+asyncTask()
+.then((val) => {
+    console.log('最终的返回值是: ' + val)
+})
+// 最终输出结果如下:
+// 同步任务
+// await 表达式的结果是: 6
+// 最终的返回值是: 6
+```
+
+### async 函数与同步任务
+async 函数本身的行为很好理解, 但是当在 async 函数之前执行一些同步代码时, 就不那么好理解了。
+让我们把第一段代码稍加改动一下, 来预测下输出:
+```js
+async function asyncTask() {
+    let result = await task1();
+    console.log('await 表达式的结果是: ' + result);
+    return result;
+}
+
+// resolve 的 Promise 对象
+function task1() {
+    return new Promise((resolve, reject) => {
+        console.log('task 1');
+        resolve(1);
+    })
+}
+
+console.log('before async 函数');
+
+asyncTask()
+.then((val) => {
+    console.log('最终的返回值是: ' + val)
+})
+
+console.log('after async 函数');
+```
 todo
+你觉得上面的代码
+
 ## this
 一般有以下几种情况: 
 * 如果是一般函数, 则其 this 指向其执行时所在的作用域。
@@ -1216,7 +1480,7 @@ console.log( RegExp.$4 ); // 3
 * 反向引用引用的是前面的分组, 如果该分组不存在, 那么正则表达式匹配字符本身。例如 `\3`, 就匹配 `\3` 转义后对应的字符。
 
 ### 正则表达式回溯法原理
-* 回溯法的基本思想是: 从问题的某一状态出发, 探索从此状态能够到达的所有状态。当一条路径走到尽头时, 回退一步或若干步, 从另一种可能的状态出发, 继续搜索, 直到所有路径都试探过为止。
+* 回溯法的基本思想是: 从问题的某一状态出发, 探索从此状态能够到达的所有状态。当一条路径走到尽头时, 回退一步或若干步, 从另一种可能的状态出发, 继续搜索, 直到所有���径都试探过为止。
 * **回溯法的本质就是深度优先搜索算法。**
 * 在正则表达式匹配的过程中, 如果尝试匹配失败, 那么下一步通常就是回溯。
 * 在 js 中, 能够触发回溯的一般有三种: `贪婪量词`, `惰性量词` 以及 `分支结构`。
@@ -1294,13 +1558,16 @@ console.log( regex2.lastIndex);
 可以使用 `Array.prototype.slice.call(fakeArray)` 将数组转化为真正的 `Array` 对象。
 
 ## 常用工具函数的实现
+
 ### bind、call、apply
 todo
 ### 深复制
 todo
 ### 双向绑定
 todo
-## Promise
+### Promise
+todo
+### 使用 async/await 封装 API
 todo
 ## 防抖与节流
 ### 防抖
@@ -1377,6 +1644,9 @@ https://juejin.im/post/5d116a9df265da1bb47d717b
 todo
 https://juejin.im/post/5d2d19ccf265da1b7f29b05f#heading-7
 
+## 移动端点透问题的成因及解决方法
+todo
+
 # React
 ## diff算法
 ### diff 策略
@@ -1406,7 +1676,15 @@ todo
 `展示组件`是指专门用于展示数据的组件, 内部不含任何业务逻辑。
 `容器组件`是指用于控制展示组件行为, 内部含有业务逻辑的组件。
 
+## React Router 实现原理
+todo
+
+## Redux 实现原理
+todo
+
 # Vue
+todo
+双向绑定实现原理
 
 # 计算机网络
 ## 浏览器缓存
@@ -1447,7 +1725,7 @@ todo
 
 ## 从输入 url 到显示页面发生了什么?
 todo
-## cookie、sessionStorage 和 localStorage 有什么区别?
+## cookie、sessionStorage、localStorage 以及 webStorage 有什么区别?
 cookie 是后端通过 `Set-Cookie` 字段设置的, 
 
 ## 常用 HTTP 请求方法
@@ -1506,6 +1784,63 @@ cookie 是后端通过 `Set-Cookie` 字段设置的,
 
 ## 内网穿透
 todo 如何进行前后端联调?
+
+## Fetch
+Fetch API 提供了一个获取资源的接口(包括跨域请求), 用于访问和操作 HTTP 请求。
+它提供了一个全局的 `fetch()` 方法, 这个方法是挂载在 window 上的, 该方法提供了一种简单、合理的方式来异步获取资源。
+
+### fetch()
+`fetch()` 方法的语法如下:
+```js
+fetch(input[, init]);
+```
+参数列表如下:
+* `input`: 定义要获取的资源。可以是一个 URL, 也可以是一个 `Request` 对象。
+* `init`: 一个配置项对象。可选的参数如下:
+ * `method`: 请求使用的方法。
+ * `headers`: 请求的头信息。
+ * `body`: 请求的 body 信息。注意 GET 和 HEAD 方法的请求不能包含 body 信息。
+ * `mode`: 请求的模式。如 `cors`、`no-cors` 或 `same-origin`。
+ * `credentials`: 请求的证书。为了在当前域名内自动发送 cookie, 必须提供这个选项。`fetch` 默认是不会发送 cookie 的。
+ * ...
+
+这个方法的返回值是一个 Promise 对象, 返回的 Promise 中包含一个 `Response` 对象。
+值得注意的是, 当接收到一个代表错误的 HTTP 状态码时, 从 `fetch` 返回的 Promise 并不会被标记为 reject, 即使状态码是 404 或 500。**仅当由于网络故障或其他原因请求被阻止时, 才会标记为 reject。**
+下面来看一段示例代码:
+```js
+let myHeaders = new Headers();
+
+let myInit = { 
+    method: 'GET',
+    headers: myHeaders,
+    mode: 'cors',
+    cache: 'default', 
+};
+
+let myRequest = new Request('flowers.jpg', myInit);
+
+fetch(myRequest).then(function(response) {
+    return response.blob();
+}).then(function(myBlob) {
+    let objectURL = URL.createObjectURL(myBlob);
+    myImage.src = objectURL;
+});
+```
+在上述代码中, 使用了 `Request()` 构造函数创建了一个 `Request` 对象, 作为参数传给了 `fetch()`。同时还使用 `Headers()` 构造函数创建了 `Headers` 对象, 作为请求的 `headers` 来使用。
+接下来我们便来看看 `Headers` 对象、`Request` 对象和 `Response` 对象。
+todo
+
+### Headers
+
+### Re
+
+### 
+
+### 参考链接
+* [Fetch 的使用方法](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)
+* [WindowOrWorkerGlobalScope.fetch()](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch)
+* [Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
+
 # 算法
 
 # Node
@@ -1518,6 +1853,26 @@ todo 软连接
 todo
 参考资料 https://www.cnblogs.com/xianyulaodi/p/5755079.html
 
+## 前后端渲染的优缺点
+首先要明确三个概念, 那就是`后端渲染`, `前端渲染`和`同构渲染`。
+「后端渲染」指传统的 ASP、Java 或 PHP 的渲染机制；「前端渲染」指使用 JS 来渲染页面大部分内容, 代表是现在流行的 SPA 单页面应用；「同构渲染」指前后端共用 JS, 首次渲染时使用 Node.js 来直出 HTML。一般来说同构渲染是介于前后端中的共有部分。
+前端渲染的优势:
+局部刷新。无需每次都进行完整页面请求
+懒加载。如在页面初始时只加载可视区域内的数据, 滚动后rp加载其它数据, 可以通过 react-lazyload 实现
+富交互。使用 JS 实现各种酷炫效果
+节约服务器成本。省电省钱, JS 支持 CDN 部署, 且部署极其简单, 只需要服务器支持静态文件即可
+天生的关注分离设计。服务器来访问数据库提供接口, JS 只关注数据获取和展现
+JS 一次学习, 到处使用。可以用来开发 Web、Serve、Mobile、Desktop 类型的应用
+后端渲染的优势:
+服务端渲染不需要先下载一堆 js 和 css 后才能看到页面(首屏性能)
+SEO
+服务端渲染不用关心浏览器兼容性问题(随着浏览器发展, 这个优点逐渐消失)
+对于电量不给力的手机或平板, 减少在客户端的电量消耗很重要
+
+以上服务端优势其实只有首屏性能和 SEO 两点比较突出。但现在这两点也慢慢变得微不足道了。
+**前端渲染是未来趋势, 但前端渲染遇到了首屏性能和SEO的问题。**
+todo
+
 ## 思考题
 1. 有 64 匹赛马, 8 条赛道, 每匹赛马速度恒定, 每次比赛只知道名次, 不知道具体时间。最少比赛多少次才能找出前三名?
 答: 至少需要 11 次。首先先分为 8 组, 比赛 8 次。之后把每组的第一名放在一起比一次, 找出所有赛马里的第一名。之后将第一名所在的分组里的第二名和其他组的第一名放在一起比一次, 找出第二名。之后再用相同的方法找出第三名。总共比赛了 8 + 3 = 11 次。
@@ -1529,3 +1884,18 @@ todo
 2. 线性表中利用( )存储方式最省时间? 
 3. 在有n个结点的二叉链表中,值为非空的链域的个数为__________。
 4. Java语言中,不考虑反射机制,一个子类显式调用父类的构造器必须用__________关键字。
+
+# typescript
+读文档
+
+# React Native
+
+# Flutter
+
+# 小程序相关
+todo 这些东西在航旅纵横二面前看完
+权限管理
+小程序发布  
+
+# 移动端
+适配相关
