@@ -751,7 +751,8 @@ BFC 的用途如下:
 * `sticky`: 可以看出是 `position: relative` 和 `position: fixed` 的结合体。当元素在屏幕内, 表现为 `relative`, 就要滚出显示器屏幕的时候, 表现为 `fixed`。具体的可以看[这个](https://www.zhangxinxu.com/wordpress/2018/12/css-position-sticky/)。
 
 ### 绝对定位与 float 的区别?
-todo
+* 浮动的框可以向左或向右移动, 直到它的外边缘碰到包含框或另一个浮动框的边框为止。由于浮动框不在文档的普通流中, 所以文档的普通流中的块框表现得就像浮动框不存在一样。**使用 `float` 脱离文档流时, 父元素内的其他盒子会无视这个元素, 但父元素内的文本, 以及父元素内其他盒子内的文本依然会为这个元素让出位置, 环绕在周围。**
+* 设置为绝对定位的元素框从文档流完全删除, 并相对于其包含块定位, 包含块可能是文档中的另一个元素或者是初始包含块。元素原先在正常文档流中所占的空间会关闭, 就好像该元素原来不存在一样。元素定位后生成一个块级框, 而不论原来它在正常流中生成何种类型的框。**对于使用 `position: absolute` 脱离文档流的元素, 其他盒子与其他盒子内的文本都会无视它。**
 
 ## display
 `display` 的常用值如下:
@@ -1046,8 +1047,45 @@ asyncTask()
 
 console.log('after async 函数');
 ```
-todo
-你觉得上面的代码
+你觉得上面的代码会输出什么呢? 答案是:
+
+> before async 函数
+> task 1
+> after async 函数
+> await 表达式的结果是: 1
+> 最终的返回值是: 1
+
+是不是有点迷惑? 为什么 async 函数执行到 task1 函数的时候, 明明返回了 Promise 对象, 但是却没有继续向下执行 async 函数剩下的代码呢?
+首先我们来看一段相似的代码:
+
+```js
+console.log(1);
+
+(new Promise((resolve, reject) => {
+    console.log(2);
+    resolve(4)
+})).then((val) => {
+    console.log(val)
+})
+
+console.log(3);
+
+// 最终输出结果:
+// 1 2 3 4
+```
+输出结果是不是很相似呢? 现在就到了揭示秘密的时刻啦。
+为了解释 async 函数的奇怪行为, 我们需要看一段话:
+
+> 对于 async 函数而言:
+> 在 await 之前的代码都是同步执行的, **可以理解为 await 之前的代码属于 `new Promise()` 时传入的代码。**
+> **而 await 之后的所有代码都是在 `Promise.then()` 中的回调。**
+
+再结合宏任务、微任务以及浏览器事件循环的原理, 我们再来看看上面的代码:
+首先, 浏览器会读取整个文件, 这属于同步任务, 是最高优先级的, 因此会先执行输出 `before async 函数`。
+之后开始执行 `asyncTask` 函数。进入该函数后, 开始执行 `task1` 函数。由于其返回的是 Promise 对象, 且在新建 Promise 时, 传入 Promise 的代码是立即执行的, 因此会输出 `task 1`。
+之后, 浏览器会把 `asyncTask` 剩余的函数作为微任务, 放入微任务队列, **但并不会立即执行。**同样的, 浏览器会把 then 方法中传入的代码放入微任务队列, **且也不会立即执行。**
+在此之后, 浏览器便执行到了最后一行, 此时会输出 `after async 函数`。
+所有宏任务执行完毕, 开始清空微任务队列。由于先放入队列的是 `asyncTask` 函数的剩余代码, 因此会先输出 `await 表达式的结果是: 1`, 最后再输出 `最终的返回值是: 1`。到这里, 整段代码也就执行完毕了。
 
 ## this
 一般有以下几种情况: 
@@ -1557,18 +1595,438 @@ console.log( regex2.lastIndex);
 典型的是函数的 `arguments` 参数, 还有像调用 `getElementsByTagName`, `document.childNodes` 之类的, 它们都返回的`NodeList` 对象都属于伪数组。
 可以使用 `Array.prototype.slice.call(fakeArray)` 将数组转化为真正的 `Array` 对象。
 
-## 常用工具函数的实现
+## 如何判断一个对象是否可为 iterable 对象, 即可迭代对象?
+很简单, 只要检测对象的 `Symbol.iterator` 是否为一个函数就可以了。
+```js
+function isIterable(obj) {
+    return typeof obj['Symbol.iterator'] === 'function';
+}
+```
 
+## 常用工具函数的实现
 ### bind、call、apply
-todo
+核心思路是, **当某个函数是某个对象的属性时, 调用该函数, 该函数内部的 this 便会指向那个对象。**为了实现这一目标, 要分四步实现:
+1. 调用 call、apply 或 bind 的对象不是函数, 此时应该抛出错误。
+2. 调用时没有传入第一个参数, 此时应该自动把其执行域绑定到 window。
+3. 把函数放入需要绑定的上下文对象中, 执行完毕后从上下文对象中删除该函数, 然后返回函数的执行结果。
+4. 如果是 bind , 要特别小心, 因为其返回的函数可以作为构造函数来调用, 因此**要利用 instance 判断返回的函数是否被作为构造函数。**
+
+注意, **Symbol 的使用是必须的,** 这是为了避免当传入的第一个参数中有重名的属性 (fn) 时会对其进行覆盖。
+具体代码如下:
+```js
+// apply / call
+Function.prototype.apply2 = function (context, args = []) {
+    if(!(this instanceof Function)) {
+        throw new TypeError('Error')
+    }
+
+    context = context || window;
+
+    let fn = Symbol('fn')
+
+    context[fn] = this;
+    
+    let result = context[fn](...args);
+    delete context[fn];
+    return result;
+}
+
+Function.prototype.call2 = function (context, ...args) {
+    if (!(this instanceof Function)) {
+        throw new TypeError('Error')
+    }
+
+    context = context || window;
+
+    let fn = Symbol('fn')
+
+    context[fn] = this;
+    
+    let result = context[fn](...args);
+    delete context[fn];
+    return result;
+}
+
+// bind
+Function.prototype.bind2 = function (context, ...args) {
+    if (!(this instanceof Function)) {
+        throw new TypeError('Error')
+    }
+
+    context = context || window;
+
+    // this 指代调用 bind2 的函数
+    const that = this;
+
+    return function F() {
+        if(this instanceof F) {
+            return new F();
+        } else {
+            return that.apply(context, args.concat(arguments));
+        }
+    }
+}
+```
+
 ### 深复制
-todo
+属性值分三种情况考虑: 简单值的话就直接赋值, 对象的话就递归调用, 数组的话则判断每个元素的类型, 然后进行复制。
+```js
+function deepCopy(obj) {
+    let keys = Object.keys(obj);
+    let copy = {};
+
+    for(let key of keys) {
+        let currentVal = obj[key];
+
+        if(Array.isArray(currentVal)) {
+            copy[key] = copyArr(currentVal);
+        } else if(typeof currentVal == 'object') {
+            copy[key] = deepCopy(currentVal);
+        } else {
+            copy[key] = currentVal;
+        }
+    }
+
+    return copy;
+}
+
+function copyArr(arr) {
+    let copy = [];
+
+    for(let item of arr) {
+        if(Array.isArray(item)) {
+            copy.push(copyArr(item))
+        } else if(typeof item == 'object') {
+            copy.push(deepCopy(item));
+        } else {
+            copy.push(item);
+        }
+    }
+
+    return copy;
+}
+```
+
 ### 双向绑定
-todo
+有两种实现方法, 一种是使用 ES5 的 Object.defineProperty 进行拦截; 另一种是使用 ES6 的 Proxy 进行拦截。
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // ES5: 利用 Object.defeinProperty 进行拦截
+        const obj = {};
+
+        function changeInput(e) {
+            obj.value = e.target.value;
+        }
+
+        Object.defineProperty(obj, 'value', {
+            get: () => {
+                return e.target.value;
+            },
+            set: (newValue) => {
+                document.getElementById('text').innerHTML = newValue;
+            }
+        })
+
+        // ES6: 使用 Proxy 进行拦截
+        // 从功能上来说, obj 完全可以去掉。之所以保留是因为 obj 代表了数据模型(Model)。
+        const obj = {};
+
+        function changeInput(e) {
+            proxy.value = e.target.value;
+        }
+
+        const proxy = new Proxy(obj, {
+            get: (target, key, receiver) => {
+                return target[key];
+            },
+            set: (target, key, value, receiver) => {
+                if(key === 'value') {
+                    document.getElementById('text').innerHTML = value;
+                    obj[key] = value;
+                }
+            },
+        })
+    </script>
+    <input id='input' type="text" onkeyup="changeInput(event)">
+    <p id='text'></p>
+</body>
+</html>
+```
+
 ### Promise
-todo
+```js
+function Promise(fn) {
+    if (typeof fn !== 'function') {
+        throw new TypeError(`Promise resolver ${fn} is not a function`)
+    }
+
+    this.status = 'pending';
+    this.value = null;
+
+    this._onResolvedFns = [];
+    this._onRejectedFns = [];
+    this._promiseList = [];
+
+    function _clearFnQueue(queue, promiseList) {
+        let executor = null;
+        let currentPromise = null;
+
+        while (queue.length > 0) {
+            executor = queue.shift();
+            currentPromise = promiseList.shift();
+
+            // executor 为函数
+            if (typeof executor === 'function') {
+                let value = null;
+                try {
+                    value = executor();
+                } catch (err) {
+                    currentPromise.status = 'rejected';
+                    currentPromise.value = err;
+                    // 如果执行出错, 影响的应该是后面 then 的执行, 而不是数组中其他 fn 的执行
+                    // 肯定是得广度优先执行, 队列中的函数应提前绑定好 this 以及 value 值
+                    // 执行错误的时候, 绑定的应该是下级中的 onRejectedFns
+                    while (currentPromise._promiseList.length > 0) {
+                        let nextPromise = currentPromise._promiseList.shift();
+                        let nextRejectedFns = currentPromise._onRejectedFns;
+
+                        // 将下一层 then 调用所需的 Promise 放入 promiseList 中
+                        promiseList.push(nextPromise);
+
+                        while (nextRejectedFns.length > 0) {
+                            let fn = nextRejectedFns.shift();
+                            queue.push(fn.bind(currentPromise, currentPromise.value));
+                        }
+                    }
+                }
+
+                currentPromise.status = 'resolved';
+                currentPromise.value = value;
+
+                // 肯定是得广度优先执行, 队列中的函数应提前绑定好 this 以及 value 值
+                while (currentPromise._promiseList.length > 0) {
+                    let nextPromise = currentPromise._promiseList.shift();
+                    let nextResolvedFns = currentPromise._onResolvedFns;
+
+                    // 将下一层 then 调用所需的 Promise 放入 promiseList 中
+                    promiseList.push(nextPromise);
+
+                    while (nextResolvedFns.length > 0) {
+                        let fn = nextResolvedFns.shift();
+                        queue.push(fn.bind(currentPromise, currentPromise.value));
+                    }
+                }
+            } else {
+                continue;
+            }
+        }
+    }
+
+    function resolve(value) {
+        this.status = 'resolved';
+        this.value = value;
+        let context = window || undefined;
+
+        // 将 onResolvedFns 队列中的函数绑定上 this 对象以及传入的 value 值
+        for (let i = 0; i < this._onResolvedFns.length; i++) {
+            let fn = this._onResolvedFns[i];
+            this._onResolvedFns[i] = fn.bind(context, value);
+        }
+
+        _clearFnQueue.call(this, this._onResolvedFns, this._promiseList);
+    }
+
+    function reject(err) {
+        this.status = 'rejected';
+        this.value = err;
+        let context = window || undefined;
+
+        // 将 onRejectedFns 队列中的函数绑定上 this 对象以及传入的 value 值
+        for (let i = 0; i < this._onRejectedFns.length; i++) {
+            let fn = this._onRejectedFns[i];
+            this._onRejectedFns[i] = fn.bind(context, err);
+        }
+
+        _clearFnQueue.call(this, this._onRejectedFns, this._promiseList);
+    }
+
+    try {
+        fn(resolve.bind(this), reject.bind(this));
+    } catch (err) {
+        throw (err);
+    }
+}
+
+// 返回新对象, 新对象状态根据之前 Promise 执行的结果来进行判断
+Promise.prototype.then = function (onFulfilled, onRejected) {
+    if (onFulfilled === undefined) {
+        onFulfilled = val => val;
+    }
+    if (onRejected === undefined) {
+        onRejected = err => err;
+    }
+
+    // 用于保存要执行的函数
+    let executor = null;
+
+    if (this.status === 'pending') {
+        this._onResolvedFns.push(onFulfilled);
+        this._onRejectedFns.push(onRejected);
+        // 返回新的 Promise 对象, 挂载在 _promiseList 上
+        let nextPromise = new Promise(() => { })
+        this._promiseList.push(nextPromise);
+        return nextPromise;
+    } else if (this.status === 'resolved') {
+        // 如果前面的 Promise 状态为 resolved, 且 onFulfilled 不为函数, 则应该返回和前面 Promise 值一样的新 Promise
+        if (typeof onFulfilled !== 'function') {
+            return Promise.resolve(this.value);
+        }
+
+        executor = onFulfilled;
+    } else if (this.status === 'rejected') {
+        // 如果前面的 Promise 状态为 rejected, 且 onRejected 不为函数, 则应该返回和前面 Promise 错误原因一样的新 Promise
+        if (typeof onRejected !== 'function') {
+            return Promise.reject(this.value);
+        }
+
+        executor = onRejected;
+    }
+
+    try {
+        let result = executor(this.value);
+        return Promise.resolve(result);
+    } catch (err) {
+        return Promise.reject(err);
+    }
+}
+
+Promise.all = function (arr) {
+    if (typeof arr[Symbol.iterator] !== 'function') {
+        throw new TypeError(`${arr} is not iterable (cannot read property Symbol(Symbol.iterator))`)
+    }
+
+    let p = new Promise(() => { });
+    // 剩余任务的数量
+    let count = 0;
+    let onResolved = function (val) {
+        if (p.status === 'pending') {
+            count--;
+        }
+        if (count === 0) {
+            p.status = 'resolved';
+            p.value = arr;
+        }
+    }
+    let onRejected = function (val) {
+        if (p.status !== 'rejected') {
+            p.status = 'rejected';
+            p.value = val;
+        }
+    }
+
+    // 数组中元素是 Promise 对象时, 才添加 then 方法
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] instanceof Promise) {
+            count++;
+            arr[i].then(onResolved, onRejected);
+        }
+    }
+
+    if (count === 0) {
+        return Promise.resolve(arr);
+    } else {
+        return p;
+    }
+}
+
+Promise.race = function (arr) {
+    if (typeof arr[Symbol.iterator] !== 'function') {
+        throw new TypeError(`${arr} is not iterable (cannot read property Symbol(Symbol.iterator))`)
+    }
+
+    let p = new Promise(() => { });
+    let onResolved = function (val) {
+        if (p.status === 'pending') {
+            p.status = 'resolved';
+            p.value = val;
+        }
+    }
+    let onRejected = function (val) {
+        if (p.status === 'pending') {
+            p.status = 'rejected';
+            p.value = val;
+        }
+    }
+
+    // 数组中元素是 Promise 对象时, 才添加 then 方法
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] instanceof Promise) {
+            arr[i].then(onResolved, onRejected);
+        }
+    }
+
+    return p;
+}
+
+Promise.resolve = function (value) {
+    // 参数是 Promise 对象, 直接返回参数即可
+    if (value instanceof Promise) {
+        return value;
+    }
+
+    // 参数为 thenable 对象
+    if (typeof value === 'Object' && value.then) {
+        // then 为一个方法
+        if (typeof value.then === 'function') {
+            return new Promise(value.then);
+        } else {
+            // then 为一个属性
+            return new Promise((resolve, reject) => {
+                resolve(value.then);
+            });
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        resolve(value);
+    });
+}
+
+// 相比之下, reject的逻辑就简单很多, 无论传入的东西是什么, 统一作为错误原因返回就行了
+Promise.reject = function (err) {
+    return new Promise((resolve, reject) => {
+        reject(err);
+    })
+}
+```
+
 ### 使用 async/await 封装 API
+```js
+// 这里封装的是 fetch
+async function request(url, head) {
+    try {
+        // 等待 fetch 被 resolve() 后才继续执行
+        let res = await fetch(url, head);
+        return res;
+    } catch(err) {
+        throw err;
+        return null;
+    }
+}
+```
+
+### 柯里化
 todo
+
 ## 防抖与节流
 ### 防抖
 防抖的原理就是: 当一个事件被触发时, 在 n 秒后执行事件处理函数。如果这段等待的时间内, 事件又被触发了, 则以新的事件时间为准。总之就是, 等触发完事件 n 秒内不再触发事件, 才执行一次事件处理函数。
@@ -1640,6 +2098,64 @@ function throttle(func, wait, ...args) {
 一种是`复杂值`, 又称为`引用数据类型`, 对象、函数、数组都属于这种类型, **储存时储存的是地址的引用。**
 https://juejin.im/post/5d116a9df265da1bb47d717b
 
+## WebGL
+### 什么是 WebGL?
+`WebGL` 的全称是 `Web Graphics Library`, 是一种 JavaScript API, 它让我们可以直接在浏览器中实现交互式 3D 图像。
+`WebGL` 作为 `<canvas>` 的特定上下文运行。在支持HTML `<canvas>` 标签的浏览器中，不需要安装任何插件，便可以使用基于 `OpenGL ES 2.0`(`OpenGL` 是最常用的跨平台图形库) 的 API 在 `canvas` 中进行 3D 渲染, 借助系统显卡来在浏览器里更流畅地展示 3D 场景和模型, 且有很好的跨平台特性。
+`WebGL` 程序由 JavaScript 的控制代码, 和在计算机的`图形处理单元(GPU, Graphics Processing Unit)`中执行的`特效代码(shader code，渲染代码)`组成。
+
+### WebGL 的渲染流程
+WebGL 比一般的 web 技术要稍微复杂一点, 因为其涉及到和 GPU 的协同工作。也正是因为如此, 大量的渲染计算会通过 GPU 来完成, 从而显著提高渲染速度。
+当我们需要渲染某个场景的时候, 会先使用 JavaScript 生成一些用于指定如何创建图形、图形的外观以及图形的位置的信息。然后再将这些信息发送到 GPU, 通过`渲染管线(rendering pipeline)`进行处理,最后返回场景视图。
+
+### 渲染管线(rendering pipeline)做了什么?
+首先我们要明白一点, **当我们的 GPU 绘制图像的时候, 其最小图形单元(注意是图形单元!)是三角形。**
+GPU 绘制图像的基本流程是: 主机程序向 OpenGL 传递一组或多组`顶点数组(vertex array)`, 这些顶点数组被放在`顶点缓冲区(vertex buffer)`。之后, 这些顶点被投影到屏幕空间中, 按照顺序连接顶点, 拼装为三角形。再之后, 对三角形所覆盖的区域, 再次进行划分, 每个区域的大小等于像素大小, 这个过程被称为`栅格化(rasterization)`。最后, 再为每个像素点分配颜色值, 并最终绘制到`帧缓冲区(frame buffer)`。
+下面这张图更加详细的展示了这一过程:
+
+![渲染管线的工作流程](/images/interview-experence/09.jpg)
+
+让我们更详细地看一下每个阶段:
+1. 整个过程从创建**顶点数组**开始。这些数组中, 每个对象对应一个顶点, 对象中包含了顶点的位置、颜色、`纹理(texture)`等相关信息。这些数组及其包含的信息可以通过以下几种方式在 JavaScript 中创建:
+ * 读取描述 3D 模型的文件(例如 `.obj` 文件)。
+ * 从头开始, 手动创建数据。
+ * 使用框架提供的内置图形。
+
+2. 在创建完顶点数组后, 需要将其发送到 GPU 进行处理, 这一点可以通过将顶点数组送入**顶点缓冲区**来完成。值得注意的是, 在向 GPU 发送顶点数组的时候, 还必须提供一个额外的**索引数组(index array)**, 索引数组中的元素指向顶点数组中的元素。索引数组用于控制之后如何划分三角形。
+
+3. 在此之后, GPU 会依次从顶点缓冲区中读取顶点, 并将顶点信息送入**顶点着色器(vertex shader)**中。顶点着色器是一个用于计算顶点详细属性的程序, 它将一组顶点属性作为输入, 并输出一组新属性。顶点着色器至少要计算顶点在空间中的投影位置; 也可以为每个顶点生成其他属性。顶点着色器并不一定需要自己编写, 你也可以使用 WebGL 内置的着色器。
+
+4. 在计算完顶点的空间投影位置等信息后, GPU 会连接顶点的投影, 以形成空间三角形。这一过程会按索引数组指定的顺序获取顶点, 并将它们划分为三个一组, 来实现这一目的。这个过程被称为**三角形的组装(triangle assembly)**。
+在这一过程中, 可以按以下三种不同的方式对顶点进行分组:
+ * `独立三角形`: 将每三个元素分为一组, 作为三角形的三个顶点。
+ * `条带状三角形`: 重用每个三角形的最后两个顶点, 作为下一个三角形的前两个顶点。 
+ * `风扇状三角形`: 将第一个顶点连接到随后的每个顶点对。
+
+![三角形的组装](/images/interview-experence/10.png)
+
+5. 接下来, 便要开始**栅格化**了。首先要做的, 是对上一步形成的三角形进行裁剪, 丢弃不可见的部分。之后, 将剩余部分划分为像素大小的小块。同时, 如果顶点分配有颜色值, **栅格化器(rasterizer)**按照不同顶点的不同颜色, 对整个区域施加颜色渐变。
+
+![栅格化](/images/interview-experence/11.png)
+
+6. 在栅格化完成后, 会将每个像素点送入**片段着色器(fragment shader)**。片段着色器也是一个程序, 为每个像素填充颜色和空间深度值, 之后将其绘制到**帧缓冲区**中。与顶点着色器一样, 片段着色器既可以自己编写, 也可以使用 WebGL 库提供的 API。
+
+7. **帧缓冲区**便是我们渲染输出的最终目标。需要注意的是, 我们所绘制的图形是处在 3D 空间中的, 因此帧缓冲区除了具有一个或多个**颜色缓冲区(colour buffer)**外, 还可以具有**深度缓冲区(depth buffer)**和**模板缓冲区(stencil buffer)**。
+深度缓冲区的作用就是区分颜色所在的空间深度, 防止把被遮挡住的颜色显示出来。
+模板缓冲区则可以指定一个形状, 让位于形状内部的元素显示, 外部的元素不显示, 类似于遮罩的效果。
+
+注意, **上文提到的着色器, 都是使用 `OpenGL ES Shading Language(GLSL)` 编写的程序, 并不能通过 JavaScript 来编写!**
+
+### WebGL 库做了什么?
+由于 WebGL 的使用比一般 web 技术更加复杂, 因此相关的库有很多(比如 `three.js` 等)。
+这些库共同的作用, 便是在 WebGL 基础上创建了可直接用于 3D 渲染的元素, 比如场景、观察角度、光源、环境光、纹理、漂浮例子特效等。这些元素的概念在所有库中都基本相同, 不同的是它们在不同库中的使用方法。
+由于 WebGL 是交互式的, 所以大多数库也提供了简单的事件处理方法。
+最后, 大多数库还提供了一些顶点着色器和片段着色器, 使用者可以根据自己的需求进行选用。
+
+### 参考资料
+* (An Introduction to WebGL — Part 1)[https://dev.opera.com/articles/introduction-to-webgl-part-1/]
+* (An intro to modern OpenGL. Chapter 1: The Graphics Pipeline)[http://duriansoftware.com/joe/An-intro-to-modern-OpenGL.-Chapter-1:-The-Graphics-Pipeline.html]
+* (初识 WebGL)[https://developer.mozilla.org/zh-CN/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL]
+
 ## 前端路由
 todo
 https://juejin.im/post/5d2d19ccf265da1b7f29b05f#heading-7
@@ -1648,6 +2164,22 @@ https://juejin.im/post/5d2d19ccf265da1b7f29b05f#heading-7
 todo
 
 # React
+## React 中的虚拟 DOM
+### 虚拟 DOM 是什么?
+虚拟 DOM 说白了就是 JS 对象。
+![虚拟 DOM](/images/interview-experence/07.png)
+当我们需要创建或更新元素时, React 首先会让这个 `VitrualDom` 对象进行创建和更改, 然后再将 `VitrualDom` 对象渲染成真实 DOM。
+当我们需要对 DOM 进行事件监听时, 首先对 `VitrualDom` 进行事件监听, `VitrualDom` 会代理原生的 DOM 事件从而做出响应。
+
+### 为什么需要虚拟 DOM?
+1. React 掩盖了底层的 DOM 操作, 让我们得得以用更加声明式的方式来描述我们的目的, 让代码更容易维护。
+2. 使用虚拟 DOM 为我们带来了不错的性能优化。因为框架的 DOM 操作层需要应对上层 API 产生的所有可能的操作, 因此它的实现必须是普适的。**React 从来没有说过 "React 比原生操作 DOM 快"。**React 给我们的保证是, 在不需要手动优化的情况下, 它依然可以给我们提供过得去的性能。而这之所以能有很好的性能, 很大程度上归功于虚拟 DOM 的 `batching` 和 `diff`。`batching` 把所有 DOM 操作收集起来, 一次性提交给真实 DOM; `diff` 算法的时间复杂度也从标准 `diff` 算法的 `O(n^3)` 降到了 `O(n)`。
+3. React 基于虚拟 DOM 实现了自己的事件系统, 抹平了不同浏览器之间的差异。
+4. 虚拟 DOM 为 React 带来了跨平台渲染的能力。转换平台时, 只需要转换 `render(渲染器)` 即可。
+
+### 虚拟 DOM 实现原理
+![虚拟 DOM 流程图](/images/interview-experence/08.png)
+todo
 ## diff算法
 ### diff 策略
 React 总的 diff 策略如下:
@@ -1684,9 +2216,26 @@ todo
 
 # Vue
 todo
-双向绑定实现原理
 
 # 计算机网络
+## http1.0、http1.1、http2.0 之间的区别
+### http1.0
+1. http1.0 中请求完成后即断开 tcp 连接, 发向同一服务器的不同请求会重复建立 tcp 连接, 服务器也不会保存之前请求的状态。
+2. `线头阻塞(Head Of Line Block)`问题, 即若引服务器正忙等原因导致第一个请求未处理, 那么后续的请求会被阻塞。
+
+### http1.1
+1. 为了解决以上问题实现了长连接, 即加入了 `Connection` 字段, 其设置 `keep-alive` 后哪怕请求结束后, tcp 连接也不会断开。若要断开连接, 需客户端在请求中将该字段设为 `false` 来告知服务器关闭连接。
+2. 在长连接基础上, http1.1还引入了`管线化(pipelining)`, 即客户端可并行发送多个请求, 服务端会按顺序返回请求结果, 以保证客户端能分辨出每次请求的结果。这样做的意义是将先入先出的队列由客户端(请求队列)转移到了服务器端(响应队列)。**但即便如此, 还是没有两个请求是并行的, 所以线头阻塞问题还是没有解决, 且管线化还有很多其他的问题, 因此一般浏览器都是默认关闭管线化的。**为了实现真正的并行请求和响应, 现阶段各大浏览器厂商的解决方法一般为开启多个 tcp 连接, 在不同连接上进行http 请求和响应。
+3. 加入了`缓存处理(cache-control)`相关的字段。
+4. 支持断点传输, 通过 `Range` 字段指定文件传输的范围实现。
+5. 增加了 `HOST` 字段, 使同一服务器能够建立多个 Web 站点。
+
+### http2.0
+1. 进行了二进制分帧, 在应用层和传输层中间加入了二进制分帧层, 提高了传输效率。
+2. 实现了多路复用。一个 tcp 连接可承载任意多个双向数据流, 每个请求对应一个数据流, 数据拆分为帧进行发送, 每个帧头部都有流标识 id, 这些帧可以乱序发送, 再根据流标识 id 进行重组。为避免关键请求被阻塞, 可为数据流设置优先级, 优先级高的数据流优先处理。这一改进解决了线头阻塞问题。
+3. 头部压缩。为了减少请求头的大小, 客户端和服务端分别维护相同的静态字典(常用头部名称及值)和动态字典(可动态添加内容)。通过传输序号和字典查询再加上合适的压缩算法可大大减少头部大小。
+4. 服务器推送。服务器可主动向客户端推动内容。
+
 ## 浏览器缓存
 缓存分为两种, 一种为`强缓存`, 一种为`协商缓存`。
 浏览器第一次请求发生后再次请求时, 会先获取该资源缓存的 header 信息, 根据缓存的 header 信息判断是否命中强缓存, 若命中则直接返回缓存文件, 本次请求不会与服务器发送通信, 但状态码为200。
@@ -1828,10 +2377,28 @@ fetch(myRequest).then(function(response) {
 ```
 在上述代码中, 使用了 `Request()` 构造函数创建了一个 `Request` 对象, 作为参数传给了 `fetch()`。同时还使用 `Headers()` 构造函数创建了 `Headers` 对象, 作为请求的 `headers` 来使用。
 接下来我们便来看看 `Headers` 对象、`Request` 对象和 `Response` 对象。
-todo
 
 ### Headers
+使用 Headers() 构造方法可以创建一个新的 Headers 对象。
 
+append() 在该接口的所有方法中, 标题名称由不区分大小写的字节序列匹配。
+get()
+init 参数, 可选, 可以是一个对象或已存在的 Headers 对象。
+set()
+has()
+delete()
+
+值得注意的是,在header已存在或者有多个值的状态下Headers.set() 和 Headers.append()的使用有如下区别, Headers.set() 将会用新的值覆盖已存在的值, 但是Headers.append()会将新的值添加到已存在的值的队列末尾. 
+
+如果您尝试传入名称不是有效的HTTP头名称的引用, 则所有Headers方法都将引发 TypeError 。 如果头部有一个不变的Guard, 则变异操作将会抛出一个 TypeError 。 在其他任何失败的情况下, 他们默默地失败。
+
+[有效的http头部字段](https://fetch.spec.whatwg.org/#concept-header-name)
+
+#### Grard
+由于 Headers 可以在 request 请求中被发送或者在 response 请求中被接收, 并且规定了哪些参数是可写的, Headers 对象有一个特殊的 guard 属性。这个属性没有暴露给 Web, 但是它影响到哪些内容可以在 Headers 对象中被操作。
+
+你不可以添加或者修改一个 guard 属性是 request 的 Request Header 的 Content-Length 属性。同样地, 插入 Set-Cookie 属性到一个 response header 是不允许的, 因此, Service Worker 中, 不能给合成的 Response 的 header 添加一些 cookie。
+todo
 ### Re
 
 ### 
@@ -1841,7 +2408,24 @@ todo
 * [WindowOrWorkerGlobalScope.fetch()](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch)
 * [Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
 
+## WebWorker
+todo
+
+## ServiceWorker
+Service workers 本质上充当Web应用程序与浏览器之间的代理服务器, 也可以在网络可用时作为浏览器和网络间的代理。它们旨在（除其他之外）使得能够创建有效的离线体验, 拦截网络请求并基于网络是否可用以及更新的资源是否驻留在服务器上来采取适当的动作。他们还允许访问推送通知和后台同步API。
+简单来说, ServiceWorker 允许应用完全控制浏览器的网络行为, 修改网络请求。你可以完全控制应用在特定情形（最常见的情形是网络不可用）下的表现。可以通过ServiceWorker创建离线应用。
+Service worker运行在worker上下文, 因此它不能访问DOM。相对于驱动应用的主JavaScript线程, 它运行在其他线程中, 所以不会造成阻塞。它设计为完全异步, 同步API（如XHR和localStorage）不能在service worker中使用。
+出于安全考量, Service workers只能由HTTPS承载, 毕竟修改网络请求的能力暴露给中间人攻击会非常危险。在Firefox浏览器的用户隐私模式, Service Worker不可用。
+参考链接
+https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
+https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
+todo
+
 # 算法
+
+# js深入系列
+todo
+https://github.com/mqyqingfeng/Blog
 
 # Node
 
@@ -1884,6 +2468,11 @@ todo
 2. 线性表中利用( )存储方式最省时间? 
 3. 在有n个结点的二叉链表中,值为非空的链域的个数为__________。
 4. Java语言中,不考虑反射机制,一个子类显式调用父类的构造器必须用__________关键字。
+5. 抽象类和接口的区别?
+6. 抽象、继承、多态?
+
+ios oc的事件、消息机制?
+ios 耗电优化?
 
 # typescript
 读文档
@@ -1895,7 +2484,13 @@ todo
 # 小程序相关
 todo 这些东西在航旅纵横二面前看完
 权限管理
-小程序发布  
+小程序发布
+小程序包压缩策略
 
 # 移动端
 适配相关
+
+AOE 网
+java基本语法
+在JavaScript中, 所有延迟加载的方式中,只有IE浏览器支持的是__________方式。
+图的遍历方法
