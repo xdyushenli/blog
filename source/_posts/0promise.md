@@ -16,7 +16,7 @@ console.log(1);
 let p = new Promise((resolve, reject) => {
     setTimeout(() => {
         resolve(4);
-    })
+    }, 1000)
 })
 
 console.log(2);
@@ -193,6 +193,9 @@ todo
 归根结底就一句话, onResolvedFns/onRejectedFns 中存放的函数, 都是同级调用, 假如当前 Promise 是 p, 那么 p 的onResolvedFns/onRejectedFns 中存放的函数, 都是由 p.then 传入的参数。p.promiseList 中存放的, 是按照 p.then 调用顺序存放的、p.then 返回的 Promise。
 如果涉及到更深层次的 then 调用, 首先要在 p.promiseList 中找到对应的 Promise。由更深层次 then 调用传入的函数, 就存放在这些 Promise 的 onResolvedFns/onRejectedFns 中。
 在执行的时候, 也要小心, 要广度优先执行, 先执行完所有同级 then 调用, 再执行更深层次的 then 调用。
+下面是对这个过程的详细阐释:
+假设最初的 Promise 为 p, p 中的 PromiseList 保存的是 p.then 返回的 Promise。当 p 的状态变为 resolve 或 reject 时, 会按照 PromiseList 中的顺序, 执行对应的 onResolved/onRejected 代码。
+如果当前 PromiseList 中的元素, 假设会 a, a.PromiseList 不为空, 则将 a.PromiseList 中的元素拿出来, 放在 p.Promise 的末尾, 同时在将 a.onResolvedFns/a.onRejectedFns 绑定 this 和 val 之后, 放入 p.onResolvedFns/p.onRejectedFns 中。
 
 # 参考资料
 * [Promise/A+](https://promisesaplus.com)
