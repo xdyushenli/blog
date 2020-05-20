@@ -17,7 +17,7 @@ tags: [ 面试 ]
 ```
 * 最后再考虑使用绝对定位。
 原理是: 父元素相对定位, 子元素绝对定位, 其中 `top`、`left`、`right` 和 `bottom` 都是相对于父元素尺寸的, 而 `margin` 和 `transform` 都是相对于自身尺寸的。
-**应当注意的是, 设置 `margin-left` 值时不能使用百分比值, 因此需要提前知道元素的宽度。**
+ **应当注意的是, 设置 `margin-left` 值时不能使用百分比值, 因此需要提前知道元素的宽度。**
 ```css
 .parent {
     position: relative;
@@ -718,12 +718,6 @@ BFC 的用途如下:
 * `align-self`: 设置当前元素在单元格内的垂直位置, 跟 `align-items` 属性的用法完全一致, 也是只作用于单个项目。
 * `place-self`: 该属性是 `align-self` 属性和 `justify-self` 属性的合并简写形式。
 
-## box-sizing
-简单来说, 该属性可以改变元素宽高的计算方式。
-这个属性有以下几个值:
-* `content-box`: 默认值。当设置为这个值时, 元素宽高只包含内容宽高, 不包含 `padding` 和 `border` 值。
-* `border-box`: 当设置为这个值时, `border` 和 `padding` 值也会算入元素宽高之内。
-
 ## 媒体查询
 用的不多, 就不讲了。详见[媒体查询 MDN 页面](https://developer.mozilla.org/zh-CN/docs/Web/Guide/CSS/Media_queries)。
 
@@ -780,9 +774,90 @@ BFC 的用途如下:
 * `hsla()`: 第一个参数为色相, 第二个参数为饱和度, 第三个参数为亮度, 第四个参数为透明度。
 
 ## 选择器
+### 选择器的种类
+
 ![选择器](/images/interview-experence/01.jpg)
 
 详情见[CSS 选择器参考手册](https://www.w3school.com.cn/cssref/css_selectors.asp)。
+
+### 选择器的权重
+设置样式的方式有很多种, 不同方式的权重不同。**当给一个 DOM 节点设置同一个样式时, 权重高者生效。**
+
+以下为使用不同方式定义样式时的权重:
+* `!important`: 权重值为无限大。
+* 行内样式: 权重值为 `1000`。
+* `id` 选择器: 权重值为 `100`。
+* 类、伪类、属性选择器: 权重值为 `10`。
+* 元素、伪元素选择器: 权重值为 `1`。
+* 继承样式、通配符: 权重值为 `0`。
+
+CSS 样式的呈现遵循以下规则:
+1. 权重大的 CSS 生效。
+2. 如果权重一致, 则后面定义的样式覆盖前面定义样式。**注意: 这里是定义顺序, 而不是类名顺序。**
+3. 如果某个节点上, 有多个选择器为其定义了样式, 且样式之间相互冲突, 则单个权重更高的选择器定义的样式会生效。**也就说对于不同等级的选择器, 即使低等级的选择器再多, 其权重仍小于一个高等级选择器定义的 CSS。**
+
+对于第二、三条规则, 是不是有点不好理解? 那我们就来看两段代码:
+
+```html
+<style type='text/css'>
+    .red {
+        color: red;
+    }
+
+    .blue {
+        color: blue;
+    }
+</style>
+
+<p class='red blue'>text</p>
+<p class='blue red'>text</p>
+```
+
+问题来了, 两个 `<p>` 标签中的字体颜色是什么呢? 最终显示都是蓝色的。这是因为 `.blue` 后于 `.red` 定义, 因此无论类名是先 `.red` 还是先 `.blue`, 最终显示的结果都是蓝色的。
+
+接下来我们看一段关于规则三的代码:
+
+```html
+<style type='text/css'>
+    #root {
+        width: 100px;
+        height: 100px;
+        background: red;
+    }
+
+    .root1 .root2 .root3 .root4 .root5 .root6 .root7 .root8 .root9 .root10 .root11 {
+        background: black;
+    }
+</style>
+
+<div class="root1">
+    <div class="root2">
+        <div class="root3">
+            <!-- ... -->
+            <!-- 中间省略了 root4 - root10 -->
+            <div id="root" class="root11"></div>
+        </div>
+    </div>
+</div>
+```
+
+按照权重计算规则, 类选择定义样式的权重应该为 `120`, 大于 `id` 选择器的权重 `100`。但由于规则三的存在, 最终显示的背景色为红色。
+
+## 伪类与伪元素的区别
+先来看看 `w3c` 对于二者的定义:
+* CSS 伪类用于向某些选择器添加特殊的效果。
+* CSS 伪元素用于将特殊的效果添加到某些选择器。
+
+直接说结论:
+伪类的操作对象是文档树中已有的元素, 而伪元素则创建了一个文档外的元素。因此, **伪类与伪元素的区别在于: 有没有创建一个文档树之外的元素。**
+需要注意的是, 伪元素的重点在于一个**伪**字, 虽然它们可以被浏览器渲染引擎识别并正确渲染, 然而**伪元素本身并不是 DOM 元素,** 所以无法被 js 直接操作————**因此任何基于 js 直接选取 DOM 元素的 CSS 更改方法对伪元素都不起作用。**
+
+![伪类](/images/interview-experence/32.png)
+
+![伪元素](/images/interview-experence/33.png)
+
+### 参考资料
+* [总结伪类与伪元素](http://www.alloyteam.com/2016/05/summary-of-pseudo-classes-and-pseudo-elements/)
 
 ## 清浮动的几种方法
 1. 为父元素设置固定高度(不推荐)。
@@ -805,11 +880,162 @@ BFC 的用途如下:
 * 设置为绝对定位的元素框从文档流完全删除, 并相对于其包含块定位, 包含块可能是文档中的另一个元素或者是初始包含块。元素原先在正常文档流中所占的空间会关闭, 就好像该元素原来不存在一样。元素定位后生成一个块级框, 而不论原来它在正常流中生成何种类型的框。**对于使用 `position: absolute` 脱离文档流的元素, 其他盒子与其他盒子内的文本都会无视它。**
 
 ## display
-`display` 的常用值如下:
-* `none`: 缺省值。
-* `block`: 默认值, 表示像块类型元素一样显示。
-* `inline-block`: 像行内元素一样显示, 但其内容像块状元素一样显示。
-* `list-item`: 块类型元素一样显示, 并添加样式列表标记。  
+`display` 属性有两个作用:
+1. 定义元素的外部显示类型(块级元素或行内元素), 规定元素在文档流中的行为。
+2. 控制其子元素的布局(`flex` 或 `grid`)。
+
+也就是说, `display` 的值可以分为两部分。这也体现在 `display` 属性设置时的语法上。
+
+```css
+/* <display-outside> values 外部显示类型 */
+display: block;
+display: inline;
+display: run-in;
+
+/* <display-inside> values 内部显示类型 */
+display: flow;
+display: flow-root;
+display: table;
+display: flex;
+display: grid;
+display: ruby;
+
+/* <display-outside> plus <display-inside> values */
+display: block flow;
+display: inline table;
+display: flex run-in;
+
+/* 还有一些值, 这里就不做阐释了 */
+```
+
+下面来具体说一下各个值的含义。首先是外部显示类型:
+* `block`: 当前元素在文档流中表现为块级元素。 
+* `inline`: 当前元素在文档流中表现为行内元素。
+* `run-in`: 
+
+之后是内部显示类型:
+* `flow`: 
+* `flow-root`: 
+* `table`: 
+* `flex`: 
+* `grid`: 
+* `ruby`: 
+
+除此之外, 还有几个属性值得额外说一下:
+* `none`:
+* `inline-block`:
+* `list-item`: 
+todo
+
+### 参考资料
+* [MDN: display](https://developer.mozilla.org/zh-CN/docs/Web/CSS/display)
+* [小 tip: 使用 CSS(Unicode 字符)让 inline 水平元素换行](https://www.zhangxinxu.com/wordpress/2012/03/tip-css-multiline-display/)
+
+## box-sizing
+简单来说, 该属性可以改变元素宽高的计算方式。
+这个属性有以下几个值:
+* `content-box`: 默认值。当设置为这个值时, 元素宽高只包含内容宽高, 不包含 `padding` 和 `border` 值。`标准盒模型(standard box model)`。
+* `border-box`: 当设置为这个值时, `border` 和 `padding` 值也会算入元素宽高之内。`替代(IE)盒模型(alternate box model)`。
+
+## 盒模型
+由于其中涉及到了关于 `display` 以及 `box-sizing` 的知识, 所以放在这里进行叙述。
+盒模型一般有两种, 分`标准盒模型(standard box model)`和``替代(IE)盒模型(alternate box model)`。这些都在 `box-sizing` 里介绍过了, 就不说了。这里要关注的, 是一些更深入的知识。
+
+### 内部盒子和外部盒子
+在 `display` 中, 我们了解到, `display` 的值可以分为外部显示类型和内部显示类型两类。
+要理解这一点, 我们可以把一个元素想象成两个嵌套的盒子。其中, 外部盒子对应 `display` 中的外部显示类型, 控制元素在文档流中的行为; 内部盒子对应 `display` 中的内部显示类型, 控制盒子内部子元素是如何布局的。
+
+### 块级盒子和内联盒子
+在 CSS 中, 我们会广泛应用两种盒子: `块级盒子(block box)`和`内联/行内盒子(inline box)`。两种盒子在文档流中的显示行为有所不同。
+一个被定义为块级的盒子会表现出如下行为:
+* 盒子会横向扩展, 并占据父元素在该方向上的所有可用空间。绝大多数情况下, 意味着盒子会和父容器一样宽。
+* 每个盒子都会换行。
+* `width` 和 `height` 属性可以发挥作用。
+* `padding`、`border` 和 `margin` 会将其他元素从当前盒子周围推开。
+
+除非特殊指定, `<h1>`、`<p>`、`<div>` 等默认情况下都是块级盒子。
+
+一个被定义为行内的盒子会表现出如下行为:
+* 盒子不会换行。
+* `width` 和 `height` 属性不起作用。
+* `padding`、`border` 和 `margin` 会被应用在盒子上, 但不会把周围同样定义为 `inline` 的盒子推开。
+
+应当注意的是, **除可替换元素外, 对于行内盒子来说, 尽管内容周围存在内边距与边框, 但其占用空间(每一行文字的高度)则由 `line-height` 属性决定。**你可以将 `line-height` 视为行内元素的 `height` 属性。
+常见的行内元素有: `<a>`、`<span>`、`<em>`、`<strong>` 等。
+
+不管是块级盒子还是行内盒子, 都属于外部显示类型的范畴, 可以通过设置 `dispaly` 来进行改变。
+
+最后附赠一点关于 `<em>` 与 `<strong>` 的小知识:
+`<em>` 在表现上是斜体, `<strong>` 在表现上是粗体。二者都表示强调, 都可以通过嵌套。嵌套的层级越深, 则其包含的内容被认定为越需要着重阅读。
+那么问题来了, 既然 `<em>` 与 `<i>`、`<strong>` 与 `<b>` 在视觉上都是一样的, 那么二者有什么区别呢?
+**在默认情况下, 它们的视觉效果是一样的, 但语义是不同的。**`<em>` 和 `<strong>` 表示其内容的着重强调, 而 `<i>` 和 `<b>` 表示从正常散文中区分出的文本。
+
+### 替换元素与非替换元素
+在 CSS 中, `可替换元素(replaced element)`的展现效果不是由 CSS 来控制的。这些元素是一种外部对象, 它们外观的渲染, 是独立于 CSS 的。
+简单来说, 它们的内容不受当前文档的样式的影响。**CSS 可以影响可替换元素的位置, 但不会影响到可替换元素自身的内容。**
+常见的替换元素有: `<iframe>`、`<video>`、`<img>`。
+`非替换元素(non-replaced element)`指展示效果由 CSS 控制的元素。大多数元素都属于非替换元素。
+
+### 参考资料
+* [MDN: CSS基础框盒模型介绍](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Box_Model/Introduction_to_the_CSS_box_model)
+* [MDN: 盒模型](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/Building_blocks/The_box_model)
+* [MDN: 可替换元素](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Replaced_element)
+
+## margin
+这是个大家都十分熟悉的属性, 但你真的了解这个属性吗?
+废话不多说, 直接罗列知识点。
+`margin` 指定的是外边距, 指定的外边距允许为负数。这里需要提一下, **`padding` 属性不能设置负数。**
+另外, **`margin` 的 `top` 和 `bottom` 属性对非替换内联元素无效,** 例如 `<span>` 和 `<code>`。
+以上这些都不是这次要讨论的重点, 这里之所以把这个属性单列出来, 是因为其有一个非常特别的行为, 那就是`外边距折叠(margin collapsing)`。
+
+### 外边距折叠
+首先简单介绍一下`外边距折叠(margin collapsing)`的概念。简单地说, 外边距折叠指的是, 当两个外边距相遇时, 它们将形成一个外边距。合并后的外边距的高度等于两个发生合并的外边距的高度中的较大者。
+一般有如下三种场景。
+
+#### 相邻元素之间的外边距合并
+当一个元素与另一个元素相邻, 且两个元素都在相邻的边上定义了外边距时, 就会发生外边距合并。
+以垂直相邻为例。当一个元素出现在另一个元素上面时, 上面元素的下外边距会和下面元素的上外边距发生合并。
+
+![相邻元素之间的外边距合并](/images/interview-experence/34.gif)
+
+#### 子元素与父元素之间的外边距合并
+当一个元素包含在另一个元素中, 且两个元素之间没有边框、内边距将两个元素隔开的情况下, 子元素的外边距会和父元素的外边距发生合并。注意, **这有可能导致子元素的外边距溢散到父元素之外!**
+
+![子元素与父元素之间的外边距合并](/images/interview-experence/35.gif)
+
+#### 元素自身的外边距合并
+最后一个是比较诡异的一点, 即元素自身的外边距也可以相互合并。
+如果一个元素有外边距, 但没有内容, 也没用边框和内边距的情况下, 元素的上外边距和下外边距、左外边距和右外边距便会接触在一起, 就会发生合并。
+
+![元素自身的外边距合并](/images/interview-experence/36.gif)
+
+如果这个外边距遇到另一个元素的外边距，它还会发生合并。
+
+![发生多次外边距合并](/images/interview-experence/37.gif)
+
+### 为什么需要外边距合并?
+虽然看起来十分迷惑, 但这种外边距合并是必不可少的。以由几个段落组成的典型文本页面为例。第一个段落上面的空间等于段落的上外边距。如果没有外边距合并，后续所有段落之间的外边距都将是相邻上外边距和下外边距的和。这意味着段落之间的空间是页面顶部的两倍。如果发生外边距合并，段落之间的上外边距和下外边距就合并在一起，这样各处的距离就一致了。
+
+![需要外边距合并的理由](/images/interview-experence/38.gif)
+
+#### 值得注意的地方
+上面叙述的都是比较简单的场景。下面说几个比较值得注意的地方。
+
+* **外边距折叠可以发生好几次。**也就是说, 上面的情况可以组合在一起, 产生更复杂的场景。有可能会发生三四个外边距折叠成一个的场景。
+* 如果参与折叠的边距中有负值, 折叠后的外边距的值为最大的正边距与最小的负边距(即绝对值最大的负边距)的和。
+* 如果参与折叠的边距都是负值, 折叠后的外边距的值为最小的负边距的值。这一规则适用于相邻元素和嵌套元素。
+* 如果没有给块级元素设置宽度, 一般来说, 块级元素会和父元素等宽。此时给元素设置负的 `margin-left` 和 `margin-right`, 会导致元素向左右两个方向拉伸, 最终宽度为: `父元素宽度 + | margin-left | + | margin-right |`。
+
+最后说一下, **只有普通文档流中块级元素的外边距才会发生外边距合并。行内框、浮动框或绝对定位之间的外边距不会合并。**
+
+这里只做了简单地知识点总结。之后有时间会写一篇博客好好讨论一下这个问题。
+
+### 参考资料
+* [MDN: margin](https://developer.mozilla.org/zh-CN/docs/Web/CSS/margin)
+* [MDN: 外边距折叠](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing)
+* [w3school: 外边距折叠](https://www.w3school.com.cn/css/css_margin_collapsing.asp)
+* [The Definitive Guide to Using Negative Margins](https://www.smashingmagazine.com/2009/07/the-definitive-guide-to-using-negative-margins/)
+* [小 Tip: margin 负值详解](https://www.jianshu.com/p/6e4f5de683ae)
 
 ## px、em 与 rem
 `px` 是最常见的单位, 1 px = 1 像素点。
@@ -826,17 +1052,46 @@ BFC 的用途如下:
 6. 双飞翼布局: 双飞翼布局与三栏布局大部分一样, 三栏全部 `float` 浮动, 但左右两栏加上负 `margin` 让其跟中间栏 `div` 并排, 先中间后左右, 以形成三栏布局。但不同的是, 其在 `main` 里加了一个子 `div` 用于显示内容, 并通过设置该子 `div` 的 `margin` 值为两测两栏留出空白。父元素无需添加 `padding` 属性, 左右 `div` 也不需要加上相对定位。
 7. `flex` 布局: 块状元素使用 `flex`, 行内元素使用 `inline-flex`。`flex` 盒子中, `float`、`clear`、`vertical-align` 失效。
 
+## 层叠上下文
+todo
+
+## 重绘与回流
+todo
+https://juejin.im/post/5a9923e9518825558251c96a
+https://www.zhangxinxu.com/wordpress/2010/01/%E5%9B%9E%E6%B5%81%E4%B8%8E%E9%87%8D%E7%BB%98%EF%BC%9Acss%E6%80%A7%E8%83%BD%E8%AE%A9javascript%E5%8F%98%E6%85%A2%EF%BC%9F/
+
 # JavaScript
 ## 闭包
 闭包是函数和声明该函数的词法环境的组合。在 js 中, 函数运行在它们被定义的作用域, 而不是它们被执行的作用域。
 通俗点的说法, 定义一个返回值是函数 B 的函数 A , 函数 B 在执行时可以访问函数 A 内部的变量及参数, 而其他函数无法访问 A 内部的变量及参数。函数 B 就被称为`闭包`。
 闭包封住了变量作用域, 有效防止了全局污染, 但同时也存在内存泄漏的风险。
+当然, 闭包也不是全无用处。比如以下场景: 假设我们现在需要写一个函数, 每次调用这个函数, 返回值都比上次调用时增加 1。这个时候就要用到闭包了。
+
+```js
+const times = (()=>{
+  var times = 0;
+  return () => times++;
+})();
+
+times(); // 1
+times(); // 2
+times(); // 3
+times(); // 4
+```
 
 ## 原型链以及实现原型继承的方式
+### 原型链
 关于原型链的描述, 只需要一张图就好。
 
-![原型链](/images/interview-experence/02.jpg)
+![原型链01](/images/interview-experence/02.jpg)
 
+如果更复杂一点的话, 可以看看这张图。
+
+![原型图02](/images/interview-experence/23.jpg)
+
+另一点值得注意的是, **箭头函数没有 `prototype` 属性, 但是有 `__proto__` 属性。**
+
+### 实现原型继承的方式
 实现原型继承的方法有很多, 有组合继承、构造函数继承、原型式继承、寄生组合继承等。**最好的实现方式是寄生组合继承:**
 
 ```js
@@ -854,7 +1109,36 @@ Child.prototype = Object.create(Parent.prototype);
 Child.prototype.constructor = Child
 ```
 
-## ES6 部分 
+### Class
+在 ES6 中, 推出了 `class`。**JavaScript 中并没有真正的类, 一直以来都是通过构造函数 + 原型的方式来模拟类的行为的。**`class` 也不例外, 它只是语法糖, 本质还是函数。
+
+类的数据类型就是函数, 类本身就指向构造函数。
+使用的时候, 也是直接对类使用new命令, 跟构造函数的用法完全一致。
+构造函数的prototype属性, 在 ES6 的“类”上面继续存在。事实上, 类的所有方法都定义在类的prototype属性上面。
+prototype对象的constructor属性, 直接指向“类”的本身, 这与 ES5 的行为是一致的。
+类的内部所有定义的方法, 都是不可枚举的(non-enumerable)。通过Objet.keys是拿不到的。
+constructor方法是类的默认方法, 通过new命令生成对象实例时, 自动调用该方法。一个类必须有constructor方法, 如果没有显式定义, 一个空的constructor方法会被默认添加。
+类必须使用new调用, 否则会报错。这是它跟普通构造函数的一个主要区别, 后者不用new也可以执行。
+
+Class 可以通过extends关键字实现继承, 这比 ES5 的通过修改原型链实现继承, 要清晰和方便很多。
+子类必须在constructor方法中调用super方法, 否则新建实例时会报错。这是因为子类自己的this对象, 必须先通过父类的构造函数完成塑造, 得到与父类同样的实例属性和方法, 然后再对其进行加工, 加上子类自己的实例属性和方法。如果不调用super方法, 子类就得不到this对象。
+ES5 的继承, 实质是先创造子类的实例对象this, 然后再将父类的方法添加到this上面(Parent.apply(this))。ES6 的继承机制完全不同, 实质是先将父类实例对象的属性和方法, 加到this上面(所以必须先调用super方法), 然后再用子类的构造函数修改this。
+如果子类没有定义constructor方法, 这个方法会被默认添加, 代码如下。也就是说, 不管有没有显式定义, 任何一个子类都有constructor方法。
+
+class ColorPoint extends Point {
+}
+
+// 等同于
+class ColorPoint extends Point {
+  constructor(...args) {
+    super(...args);
+  }
+}
+
+另一个需要注意的地方是, 在子类的构造函数中, 只有调用super之后, 才可以使用this关键字, 否则会报错。这是因为子类实例的构建, 基于父类实例, 只有super方法才能调用父类实例。
+todo
+
+## ES6 部分
 ### var、let 和 const 的区别
 这个是个很简单的问题, 只说一说容易忘记的部分吧:
 `const` 在定义变量的时候必须赋值, 而 `let` 和 `var` 则不必。
@@ -1161,8 +1445,39 @@ console.log(3);
 所有宏任务执行完毕, 开始清空微任务队列。由于先放入队列的是 `asyncTask` 函数的剩余代码, 因此会先输出 `await 表达式的结果是: 1`, 最后再输出 `最终的返回值是: 1`。到这里, 整段代码也就执行完毕了。
 
 ### Set 和 WeakSet 的区别
+* `Set` 中存储的是不重复的值, 可以是简单值, 也可以是引用类型的值。
+* `WeakSet` 只能用于存储引用类型的值, 存储简单值时会报错。**值得注意的是, `WeakSet` 对于对象的引用都是弱引用, 如果没有其他的对 `WeakSet` 中对象的引用, 那么这些对象会被当成垃圾回收掉。**这也意味着 `WeakSet` 中没有存储当前对象的列表。正因为这样, **`WeakSet` 是不可枚举的。**不支持 `forEach`、`for-of`、`keys`、`values` 方法, 没有 `size` 属性。
+
+```js
+let set = new Set();
+let obj = {name: 'cc'};
+set.add(obj);
+obj = null;
+[...set][0]; // {name: 'cc'} 转数组后依然可以访问到
+
+let weakSet = new WeakSet();
+let obj = {};
+weakSet.add(obj);
+obj = null;  // 会移除引用
+weakSet.has(obj); // false
+```
+
 ### Map 和 WeakMap 的区别
-### Class
+* `Map` 是一种增强 key/value 集合, 其 key 和 value 都是任意的。常用于创建哈希表。**当使用 get 访问其中某个元素时, 不会进行任何类型转换**
+* `WeakMap` 只接收非 `null` 的对象作为 key, 否则会报错, value 可以是任意的。**值得注意的是, `WeakMap` 对于作为其 key 的对象的引用也是弱引用。因此, `WeakMap` 也是不可枚举的。**
+
+```js
+// 一般对象
+const obj = Object.create(null);
+obj[1] = 'cc';
+obj['1']; // cc
+
+// map
+const map = new Map();
+map.set(1, 'cc');
+map.has('1');  // false   1 和 '1'不会被转换
+```
+
 ### ES Module
 ### Proxy
 todo
@@ -1386,12 +1701,93 @@ Element.focus() // 聚焦当前元素
 
 ### 如何修改页面内容?
 假设目前 HTML 如下:
+
 ```html
-<ul id='container'></ul>
+<ul id='js-list'></ul>
 ```
+
 需要向其中添加 3 个 `li` 元素, 如何添加?
-todo
-### 如何绑定事件?
+下面是一份比较完善的代码:
+
+```js
+(() => {
+    var ndContainer = document.getElementById('js-list');
+    if (!ndContainer) {
+        return;
+    }
+
+    // 方法1
+    for (var i = 0; i < 3; i++) {
+        var ndItem = document.createElement('li');
+        ndItem.innerText = i + 1;
+        ndContainer.appendChild(ndItem);
+    }
+
+    // 方法2
+    var html = [];
+    for (var i = 0; i < 3; i++) {
+        html.push('<li>' + (i + 1) + '</li>');
+    }
+    container.innerHTML = html.join('');
+})();
+```
+
+上面这段代码其实很简单, 但需要注意的地方有两点:
+1. 我们使用了 IIFE 封锁了作用域, 避免产生全局变量, 也避免命名冲突的风险。
+2. 对取不到对应节点的情形, 进行了额外的处理, 增加了代码的容错性。
+
+那么问题来了, 如果要插入 30000 个节点, 那应该怎么做呢?
+这就涉及到一个优化问题。数据量变大之后, 该如何操作 DOM 呢?
+关于这个问题, 可以从两方面去解决:
+* 懒加载。这里的懒加载是广义上的。由于节点非常多, 很多节点其实用户并不会看到, 并没有加载的必要。因此我们可以将节点分批加载, 既保证了首屏渲染速度, 又保证了性能。这一点可以利用 `requestAnimationFrame()` 来解决。
+* 减少 DOM 操作的次数。这一点可以通过创建 `DocumentFragment` 来解决。
+
+```js
+(() => {
+    const ndContainer = document.getElementById('js-list');
+    if (!ndContainer) {
+        return;
+    }
+
+    const total = 30000;
+    const batchSize = 4; // 每批插入的节点次数, 越大越卡
+    const batchCount = total / batchSize; // 需要批量处理多少次
+    let batchDone = 0;  // 已经完成的批处理个数
+
+    function appendItems() {
+        // 创建 DocumentFragment 对象
+        const fragment = document.createDocumentFragment();
+        // 向 DocumentFragment 中添加内容
+        for (let i = 0; i < batchSize; i++) {
+            const ndItem = document.createElement('li');
+            ndItem.innerText = (batchDone * batchSize) + i + 1;
+            fragment.appendChild(ndItem);
+        }
+
+        // 每次批处理只修改 1 次 DOM
+        ndContainer.appendChild(fragment);
+
+        batchDone += 1;
+        doBatchAppend();
+    }
+
+    function doBatchAppend() {
+        if (batchDone < batchCount) {
+            window.requestAnimationFrame(appendItems);
+        }
+    }
+
+    // 开始执行
+    doBatchAppend();
+})();
+```
+
+更多关于 `requestAnimationFrame()` 和 `DocumentFragment` 的信息, 参见:
+* [MDN: window.requestAnimationFrame](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestAnimationFrame)
+* [Using requestAnimationFrame](https://css-tricks.com/using-requestanimationframe/)
+* [MDN: DocumentFragment](https://developer.mozilla.org/zh-CN/docs/Web/API/DocumentFragment)
+
+### 如何绑定事件? 有什么区别?
 绑定事件有三种方法:
 1. 使用内联
 2. 使用 `.on` 的方式进行绑定
@@ -1440,22 +1836,76 @@ target.addEventListener('click', func);
 * `once`: Boolean, 表示 `listener` 在添加之后最多只调用一次。如果是 true,  `listener` 会在其被调用之后自动移除。
 * `passive`: Boolean, 设置为 true 时, 表示 `listener` 永远不会调用 `preventDefault()`。如果 `listener` 仍然调用了这个函数, 客户端将会忽略它并抛出一个控制台警告。
 
+之后是 `useCapture` 参数, 它是一个布尔值, 表示是否要使用事件捕获来触发事件。默认为 `false`。
+
 和 `.on` 事件绑定语法一样, 当绑定的函数是普通函数时, 事件处理函数在执行时 this 指向触发事件的元素; 当绑定的函数是箭头函数时, 事件处理函数在执行时 this 指向 window(非严格模式)或 undefined(严格模式)。
 因此, **使用箭头函数时, 原函数中可用的变量和常量在事件处理器中同样可用。**
-另外, 还有一点非常重要, **`addEventLinstener()` 对任何 DOM 元素都是有效的, 而不仅仅只对 HTML 元素有效。**
+另外, 还有一点非常重要, **`addEventLinstener()` 对任何 DOM 节点都是有效的, 而不仅仅只对 HTML 元素有效。**
 
-### 当数据量变大之后, 如何进行优化?
-### DOM 树的遍历
+### 事件流模型? 事件代理?
+#### 事件流
+当一个事件被触发时, 分为三个阶段:
+1. 事件捕获阶段: 事件从根节点出发, 不断向子节点传递, 直到目标节点。沿途触发相同类型的事件。
+2. 事件到达注册的目标元素上, 执行对应事件处理函数。
+3. 事件冒泡阶段: 事件从目标元素出发, 一直冒泡到根节点, 沿途触发相同类型的事件。在此过程中, 可以在每个节点捕捉到相关事件。可以通过 `e.stopPropagation` 方法终止冒泡。
+
+**事件捕获和事件冒泡只能有一个阶段触发事件。**这个通常是通过 `target.addEventLinstener` 的第三个参数来指定的。如果是 `true`, 即为在事件捕获阶段触发事件; 如果是 `false`, 即为在事件冒泡阶段触发事件, 此为默认值。
+
+#### 事件代理
+事件代理又名事件委托。
+当节点很多时, 为了避免一一绑定事件带来的麻烦, 我们可以使用事件代理。
+事件代理是利用事件冒泡的特性, 将子节点的事件绑定在父节点上, 然后再回调函数里针对事件对象的类型以及触发事件的 DOM 节点进行区分, 从而执行不同的操作。
+
+### 如何阻止事件冒泡和浏览器默认行为?
+#### 阻止事件冒泡?
+w3c 的方法是 `e.stopPropagation()`, IE 则是使用 `e.cancelBubble = true`。
+
+#### 阻止浏览器默认行为?
+* w3c 的方法是 `e.preventDefault()`, IE 则是使用 `e.returnValue = false`。
+* 事件处理函数返回 `false`。
+
+### 获取页面元素位置与宽高?
+`element.clientWidth` 和 `element.clientHeight` 可以分别用于获取元素宽高。获取到的宽高为 `content + padding + border`。
+
+要获取位置, 可以使用 `element.getBoundingClientRect()` 方法。**要注意的是, 该方法返回的元素相对于视口的位置, 而不是元素在整个文档流中的位置。**返回值是一个对象, 包含 x、y、width、height、top、left、right、bottom。
+
+## requestAnimationFrame
 todo
+
+## v8 的垃圾回收机制
+todo
+v8是什么?
+JavaScript 是一门具有自动垃圾回收机制的编程语言, 主要有以下两种方式来回收内存。
+
+### 引用计数
+`引用计数(reference counting)`的含义是跟踪记录每个值被引用的次数。
+当声明了一个变量并将一个引用类型值赋给该变量时, 则这个值的引用次数就是 1。如果同一个值又被赋给另一个变量, 则该值的引用次数加 1。相反, 如果包含对这个值引用的变量又取得了另外一个值, 则这个值的引用次数减 1。
+当这个值的引用次数变成 0 时, 则说明没有办法再访问这个值了, 因而就可以将其占用的内存空间回收回来。这样, 当垃圾收集器下次再运行时, 它就会释放那些引用次数为零的值所占用的内存。
+**这种方法的局限性在于, 无法清除循环引用的实例。**
+
+### 标记-清除
+这个算法把"对象是否不再需要"简化定义为"对象是否可以获得"。
+这个算法假定设置一个叫做 root 的根对象(在 Javascript 里, root 即为全局对象)。垃圾回收器将定期从 root 开始, 找所有从 root 开始引用的对象, 然后找这些对象引用的对象....从 root 开始, 垃圾回收器将找到所有可以获得的对象, 之后回收所有不能获得的对象的内存。
+**从 2012 年起, 所有现代浏览器都使用了标记-清除垃圾回收算法, 这也是 JavaScript 采用的垃圾回收机制。**
+
+## v8 中一段代码的执行过程
+在执行一段代码时, JS 引擎会首先创建一个执行栈
+然后JS引擎会创建一个全局执行上下文, 并push到执行栈中, 这个过程JS引擎会为这段代码中所有变量分配内存并赋一个初始值（undefined）, 在创建完成后, JS引擎会进入执行阶段, 这个过程JS引擎会逐行的执行代码, 即为之前分配好内存的变量逐个赋值(真实值)。
+如果这段代码中存在function的声明和调用, 那么JS引擎会创建一个函数执行上下文, 并push到执行栈中, 其创建和执行过程跟全局执行上下文一样。但有特殊情况, 即当函数中存在对其它函数的调用时, JS引擎会在父函数执行的过程中, 将子函数的全局执行上下文push到执行栈, 这也是为什么子函数能够访问到父函数内所声明的变量。
+还有一种特殊情况是, 在子函数执行的过程中, 父函数已经return了, 这种情况下, JS引擎会将父函数的上下文从执行栈中移除, 与此同时, JS引擎会为还在执行的子函数上下文创建一个闭包, 这个闭包里保存了父函数内声明的变量及其赋值, 子函数仍然能够在其上下文中访问并使用这边变量/常量。当子函数执行完毕, JS引擎才会将子函数的上下文及闭包一并从执行栈中移除。
+最后, JS引擎是单线程的, 那么它是如何处理高并发的呢？即当代码中存在异步调用时JS是如何执行的。比如setTimeout或fetch请求都是non-blocking的, 当异步调用代码触发时, JS引擎会将需要异步执行的代码移出调用栈, 直到等待到返回结果, JS引擎会立即将与之对应的回调函数push进任务队列中等待被调用, 当调用(执行)栈中已经没有需要被执行的代码时, JS引擎会立刻将任务队列中的回调函数逐个push进调用栈并执行。这个过程我们也称之为事件循环。
+附言：需要更深入的了解JS引擎, 必须理解几个概念, 执行上下文, 闭包, 作用域, 作用域链, 以及事件循环。建议去网上多看看相关文章, 这里推荐一篇非常精彩的博客, 对于JS引擎的执行做了图形化的说明, 更加便于理解。
+todo
+https://tylermcginnis.com/ultimate-guide-to-execution-contexts-hoisting-scopes-and-closures-in-javascript/?spm=ata.13261165.0.0.2d8e16798YR8lw
 
 ## 跨域问题
 ### 为什么会有跨域问题?
 这就要说到浏览器`同源策略`了。
-处于对保护敏感信息的考虑, 避免���前网站通过 `Cookie` 等手段获取到别的网站保存的敏感用户信息, 浏览器设置了同源策略, 具体就是:
+出于对保护敏感信息的考虑, 避免网站通过 `Cookie` 等手段获取到别的网站保存的敏感用户信息, 浏览器设置了同源策略, 具体就是:
 JavaScript 在发送请求时, URL 的域名必须和当前页面完全一致。
 完全一致是指域名要相同(如 www.baidu.com 和 baidu.com 是不同的), 协议要相同(http 和 https 不同), 端口要相同。
 
-### 跨域请求的四种方法
+### 跨域发送 Ajax 请求的四种方法
 #### Flash (废弃)
 
 #### 在同源域名下架设一个代理服务器转发(需额外开发)
@@ -1481,13 +1931,12 @@ JavaScript 负责将请求发送到代理服务器, 之后代理服务器发送�
 
 #### CORS
 全称是 `Cross-Origin Resource Sharing`, 是最常用的跨域策略, 只要浏览器支持 HTML5 就能用。
-前端部分和普通 Ajax 请求无任何区别, 浏览器会自动进行信息补全。
-后端部分是实现 CORS 的重点, 只有服务器实现了 CORS 接口, 才能跨源通信。
 
 ##### CORS的两种请求
-* 简单请求(同时满足以下两条件):
+* 简单请求(同时满足以下三个条件):
  1. 请求方法是 `HEAD`、`GET`、`POST` 的三者之一。
- 2. HTTP头信息不超出以下几种字段: `Accept`、`Accept-Language`、`Content-Language`、`Last-Event-ID`、`Content-Type`、`application/x-www-form-urlencoded`、`multipart/form-data`、`text/plain`。
+ 2. HTTP头信息不超出以下几种字段: `Accept`、`Accept-Language`、`Content-Language`、`Content-Type`、`DPR`、`DownLink`、`Save—Data`、`Width`、`Viewport-Width`。
+ 3. `Content-type` 的值为下列三者之一: `application/x-www-form-urlencoded`、`multipart/form-data`、`text/plain`。
 
 * 非简单请求: 不是简单请求的就是非简单请求。
 
@@ -1496,17 +1945,71 @@ JavaScript 负责将请求发送到代理服务器, 之后代理服务器发送�
 在 JavaScript 向外域发送一个请求后, 浏览器收到响应后会先检查响应的 `Access-Control-Allow-Origin` 是否包含本域。若包含则请求成功, 若不包含则浏览器会报错, 且 JavaScript 收不到任何响应。
 **简单请求其实就是表单请求。**表单请求一直都可以发起跨域请求。
 **综上所述, 简单跨域请求能否成功的关键在于让对方的服务器返回一个正确的 `Access-Control-Allow-Origin`。**
+
 ##### 非简单请求
-基本流程简述
-先发送`预检请求`, 询问服务器当前网页能不能发送 CORS 请求。预检请求的请求方法是 `OPTIONS`。
+对于非简单请求来说, 浏览器会先发送`预检请求(preflight)`, 询问服务器当前网页能不能发送 CORS 请求。预检请求的请求方法是 `OPTIONS`。
+在预检请求中, 头部必须包含三个字段:
+* `origin`: 发送请求的域名。
+* `Access-Control-Request-Method`: 实际请求使用的请求方法。
+* `Access-Control-Request-Headers`: 实际请求将携带的、不属于简单请求范畴的首部字段。
+
+根据以上字段, 服务器会判断是否接受实际请求。
+
+在预检请求的响应中, 头部信息有四个需要注意的字段:
+* `Access-Control-Allow-Origin`: 服务器允许访问该资源的外域 URI。如果是 `*`, 则表明允许来自所有域的请求。
+* ` Access-Control-Allow-Methods`: 服务器允许客户端使用的请求方法。
+* `Access-Control-Allow-Headers`: 服务器允许请求头中携带的字段, 一般与 `Access-Control-Request-Headers` 相对应。
+* `Access-Control-Max-Age`: 这个字段的值一般为一个数字, 单位是秒。表示该响应的有效时间。在有效时间内, 浏览器无须为统一请求再次发起预检请求。应当注意的是, **浏览器自身也维护了一个默认的预检请求最大有效时间, 如果该首部字段的值超过了浏览器的最大有效时间, 则该字段不会生效。**
+
 如果服务器同意请求, 则服务器会返回一个包含了 `Access-Control-Allow-Origin` 等字段的响应, 浏览器收到响应以后检查对应字段, 确认允许跨源请求, 就可以做出回应。
 如果服务器否定请求, 则服务器会返回一个不包含任何 CORS 相关字段的响应, 或者明确表示请求不符合条件。之后浏览器会抛出一个错误, 可被 `XMLHttpRequest` 对象的 `onerror` 回调函数捕获。
 一旦服务器通过了预检请求, 以后每次浏览器发送 CORS 请求, 就都跟简单请求一样, 会有一个 `Origin` 头信息字段。服务器的回应, 也都会有一个 `Access-Control-Allow-Origin` 头信息字段。
+另外还有一点值得注意, **在最初的规范中, CORS 规定预检请求是不能重定向的,** 如果一个预检请求发生了重定向, 浏览器将抛出一个错误。**不过在后续的修订中废弃了这一要求。**
+
+##### 附带身份验证信息的请求
+附带身份验证信息的请求也属于简单请求或非简单请求的一种, 但会有些额外的处理, 因此需要另外说明一下。
+一般而言, 对于跨域 `XMLHttpRequest` 或 `Fetch` 请求, 浏览器不会发送身份凭证信息。如果要发送凭证信息, 需要设置 `XMLHttpRequest` 的 `withCredentials` 标志位, 将其设置为 `true`。之后, 便可以发送带有身份验证信息的请求了。
+但是, 如果服务器端的响应中未携带 `Access-Control-Allow-Credentials: true`, 浏览器将不会把响应内容返回给请求的发送者。
+对于附带身份凭证的请求, 服务器不得设置  `Access-Control-Allow-Origin` 的值为 `*`, 否则请求会失败。
+
+#### http 的 proxy
+todo
+#### document.domain
+当二级域名相同时, 例如a.test.html和b.test.html, 只需要给两个页面都设置document.domain = 'test.html', 就可以实现跨域。
+todo
+
+#### postMessage
+如a.html页面通过iframe嵌入了b.html页面, 其中一个可以通过postMessage方法发送信息, 另一页面通过监听message事件判断来源并接受消息。
+todo
+
+### 规避 Cookie 同源策略的方法
+Cookie 是服务器写入浏览器的一小段信息。由于同源策略的存在, 只有同源的页面才能共享 Cookie。
+那么, 如何才能规避这种影响, 让不同源的页面也访问到 Cookie 呢?
+
+#### document.domain
+一般来说, `document.domain` 指向的都是原始域名。但是这个属性是可写的, 因此可以通过更改该属性, 实现不同页面之间共享 Cookie。
+应当注意的是, 如果成功设置此属性, 则原始端口的端口部分也将设置为 `null`。
+
+举个例子。假设我们有一个 
+todo
+
+**这种方法只适用于 Cookie 和 iframe 窗口, LocalStorage 和 IndexDB 无法通过这种方法, 规避同源政策, 而要使用下文介绍的PostMessage API。**
+另外, document.domain 并不是可以任意赋值的。
+
+#### 设置 Cookie 的 path 或 domain
+https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie
+
+### 规避 iframe 同源策略的方法
+
+https://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html
 
 #### 参考链接
-* [http://www.ruanyifeng.com/blog/2016/04/cors.html](http://www.ruanyifeng.com/blog/2016/04/cors.html)
-* [http://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html](http://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html)
-* [http://javascript.ruanyifeng.com/bom/cors.html](http://javascript.ruanyifeng.com/bom/cors.html)
+* [跨域资源共享 CORS 详解](http://www.ruanyifeng.com/blog/2016/04/cors.html)
+* [浏览器同源政策及其规避方法](http://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html)
+* [CORS 通信](http://javascript.ruanyifeng.com/bom/cors.html)
+* [document.domain 解决跨域问题, 详细讲解](https://www.sojson.com/blog/179.html)
+* [Document.cookie](https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie)
+* [MDN: HTTP 访问控制(CORS)](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS)
 
 ## 正则
 ### 正则表达式字符匹配攻略
@@ -1676,6 +2179,83 @@ console.log( regex2.lastIndex);
 
 除了这两种方法外, 还可以使用 `Object.prototype.toString.call(variable)` 来更加准确的判断某个元素的类型。
 
+### 关于 instanceof 的扩展知识
+这里关于 `instanceof` 还要多说两句。
+
+#### instanceof 的迷惑行为大赏
+首先我们来看一些关于 `instanceof` 的迷惑行为:
+
+```js
+console.log(Object instanceof Object); //true 
+console.log(Function instanceof Function); //true 
+console.log(Number instanceof Number); //false 
+console.log(String instanceof String); //false 
+ 
+console.log(Function instanceof Object); //true 
+ 
+console.log(Foo instanceof Function); //true 
+console.log(Foo instanceof Foo); //false
+```
+
+要理解上面的行为, 我们首先要看看在 JavaScript 中, `instanceof` 的判断逻辑是怎样的。
+
+```js
+//L 表示左表达式, R 表示右表达式
+function instance_of(L, R) {
+    var O = R.prototype; // 取 R 的显示原型
+    L = L.__proto__; // 取 L 的隐式原型
+    while (true) { 
+        if (L === null) 
+            return false; 
+        if (O === L) // 这里重点: 当 O 严格等于 L 时, 返回 true 
+            return true; 
+        L = L.__proto__; 
+    } 
+}
+```
+
+配合这张图看, 事情就变得清晰起来了。
+
+![原型链](/images/interview-experence/23.jpg)
+
+总结一下, 有以下三点:
+1. 所有对象和函数 `instance Object` 都返回 `true`。
+2. 所有函数 `instanceof Function` 都返回 `true`。
+3. 除 `Object` 和 `Function` 之外的构造函数 `instanceof` 自身都返回 `false`。**因为构造函数的原型链上只有`Function.prototype` 和 `Object.prototype` 而没有它们自身的 `prototype`, 这一点很不容易理解!**
+
+#### instanceof 能否判断简单值?
+接下来是 `instanceof` 是否能判断简单值的问题, 答案是**能**。原理也很简单, 那就是使用 `[Symbol.hasInstance]`, 这个属性常用于判断某对象是否为某构造函数的实例。因此你可以用它自定义 `instanceof` 操作符在某个类上的行为, **包括 JavaScript 的内置类, 如 Number、String 等**。
+
+```js
+class Number {
+    static [Symbol.hasInstance](instance) {
+        if (typeof instance === 'number') {
+            return true;
+        }
+
+        // instanceof 操作符原有的判断逻辑
+        let left = instance.__proto__; // 取等式左边对象的隐式原型
+        let right = this.prototype; // 取等式右边对象的显示原型
+        while (true) {
+            if (left === null)
+                return false;
+            if (right === left)// 这里重点: 当右边的对象严格等于左边的对象时, 返回 true 
+                return true;
+            left = left.__proto__;
+        }
+    }
+}
+
+console.log(111 instanceof Number); // true
+console.log(new Number(123) instanceof Number); // true
+```
+
+上面的代码相当于重写了内置 `Number` 函数, 虽然可以让我们通过 `instanceof` 判断简单值, 但也有副作用, 那就是**使用 `class` 声明的 `Number` 函数不能在没有 `new` 的时候调用了, 否则会报错。**
+
+### 参考资料
+* [Symbol.hasInstance](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol/hasInstance)
+* [JavaScript instanceof 运算符深入剖析](https://www.ibm.com/developerworks/cn/web/1306_jiangjj_jsinstanceof/index.html)
+
 ## 在 Javascript 中什么是伪数组? 如何将伪数组转化为标准数组?
 伪数组是指类数组对象, 最常见的就是字符串。
 伪数组是指无法直接调用数组方法或期望 `length` 属性有什么特殊的行为, 但仍可以对真正数组遍历方法来遍历它们。
@@ -1716,8 +2296,201 @@ Object.is(NaN, NaN); // true
 
 另外, **除了 `undefined`、`null`、`false`、`NaN`、`''`、`0`、`-0` 以外的值在类型转换中会被转换为 `true`,** 应当额外注意。
 
-## 常见浏览器安全问题及防范措施
+## getter 与 setter
+首先说明参数。
+* `get` 方法没有参数。当访问该属性时, 该方法会被执行。方法执行时虽然没有参数传入, 但是会传入 this 对象。
+* `set` 方法将接受唯一参数, 即该属性新的参数值。当属性值修改时, 触发执行该方法。
+
+其次说明用途, `get` 与 `set` 常常是在 `Object.setProperty()` 和 `Object.setProperties()` 中使用的。二者结合可以定义一个伪属性, 这个伪属性的用途一般是对真实属性的数据进行加工。也可用来为真实属性添加额外操作。
+最重要的是, **这两个属性要设就设一对,** 不要只设一个, 不然会出现意想不到的行为。
+至于循环引用的问题, 只要 get 方法返回 `this[属性名]` 就不会出现这个问题了。
+
+## for...in 和 for...of
+for..in 遍历的是对象的键名, 对于数组来说, 就是数组的下标。
+for..of 遍历的是数组的值, **不能直接用于遍历对象。**
+**两者都不仅会遍历对象本身的属性, 还会沿着对象的原型链向上, 并遍历沿途所有的对象, 直到 `Object.prototype` 为止。**
+
+## JavaScript 中的数字
+### 从 0.1 + 0.2 != 0.3 说起
 todo
+
+## `CommonJS` 与 ES6 中模块引入的区别?
+`CommonJS` 是一种模块规范, 最初被应用于 Nodejs, 成为 Node.js 的模块规范。运行在浏览器端的 JavaScript 由于也缺少类似的规范, 在 ES6 出来之前, 前端也实现了一套相同的模块规范(例如: AMD), 用来对前端模块进行管理。
+自 ES6 起, 引入了一套新的 `ES6 Module` 规范, 在语言标准的层面上实现了模块功能, 而且实现得相当简单, 有望成为浏览器和服务器通用的模块解决方案。**但目前浏览器对 `ES6 Module` 兼容还不太好**, 我们平时在 Webpack 中使用的 export 和 import, 会经过 Babel 转换为 `CommonJS` 规范。
+
+在语法上, 二者的差别如下:
+* `CommonJS` 模块输入和输出的关键字是 `require()` 和 `module.exports`/`exports`。
+`require()` 接收一个模块的文件路径作为参数, 返回这个模块。
+`module.exports` 和 `exports` 指向的是同一个对象, 使用 `require()` 读取后返回的也是这个对象。我们可以把要导出的变量作为属性挂载在这个对象上。
+**最终导出时, 导出的是 `module.exports` 指向的对象。**也就是说, 我们可以改变 `exports` 指向的对象, 这对最终导出的结果没有影响, 但会破坏 `module.exports` 和 `exports` 指向的一致性, 因此是不推荐的。
+下面是具体的例子:
+```js
+// 例程一
+// ModuleA.js
+module.exports.a = 1;
+exports.b = 2;
+// test.js
+let A = require('./ModuleA.js');
+// {a: 1, b: 2}
+console.log(A);
+
+// 例程二
+// ModuleA.js
+module.exports = { a: 1 };
+exports = { b: 2 };
+
+// test.js
+let A = require('./ModuleA.js');
+// {a: 1}
+console.log(A);
+```
+
+* ES6 中, 模块输入和输出使用的关键字分别是 `import ... from ...` 和 `export`/`export default`。
+**注意: 一个文件只能有一个 `export defalut`, 但 `export` 可以存在多个, 且可以和 `export default` 一起使用。**
+至于具体怎么使用, 还是看例子吧:
+
+```js
+// module.js
+const a = 1;
+const b = 2;
+const c = 3;
+export function fn() {
+    // ...
+}
+export {
+    a,
+    b,
+}
+export default c;
+// 注意到, export 和 export default 后面既可以跟对象, 也可以跟变量的声明
+
+// test.js
+// 可以通过 as 关键字来对导出模块中的变量进行重命名
+import * as Module from './module.js';
+// {a: 1, b: 2, fn: function, default: 3}
+console.log(Module);
+
+import { a, b, c } from './module.js';
+// 1 2 3
+console.log(a, b, c)
+
+import x from './module.js';
+// 3
+console.log(x);
+
+import {a as x, default as y} from './module.js';
+// 1 3
+console.log(x, y);
+```
+
+梳理完了语法上的差别, 该看看在使用上的差别了:
+1. `CommonJS` 模块输出的是一个值的浅拷贝, `ES6 Module` 输出的是值的引用。之所以输出拷贝, 主要是为了防止某个模块在其他文件中引用并修改后, 后续别的文件引用该模块时出现值被篡改的问题。
+2. `CommonJS` 模块是运行时加载, `ES6 Module` 是编译时输出接口。
+3. `CommonJs` 是动态语法可以写在判断里, `ES6 Module` 静态语法只能写在顶层。
+4. `CommonJs` 的 this 是当前模块, `ES6 Module` 的 this 是 `undefined`。
+5. `CommonJS` 加载的是整个模块, 将所有的变量全部加载进来; `ES6 Module` 可以单独加载其中的某个变量。
+
+## 常用数组遍历方法
+map、reduce、forEach、
+map 是常用的数组遍历方法之一。
+```js
+var a = [];
+
+a[5] = undefined;
+a[10] = undefined;
+
+// fn 只会执行两次, 分别是 5、10, 其他时候不会执行
+// 内部原理是使用 Object.prototype.hasOwnProperty()
+// a.hasOwnProperty(0) === false
+// a.hasOwnProperty(5) === true
+a.map(fn);
+
+// map: 生成一个新数组, 遍历原数组, 
+// 将每个元素拿出来做一些变换然后放入到新的数组中
+let newArr = [1, 2, 3].map(item => item * 2);
+console.log(`New array is ${newArr}`);
+
+// filter: 数组过滤, 根据返回的boolean
+// 决定是否添加到数组中
+let newArr2 = [1, 2, 4, 6].filter(item => item !== 6);
+console.log(`New array2 is ${newArr2}`);
+
+// reduce: 结果汇总为单个返回值
+// acc: 累计值; current: 当前item
+let arr = [1, 2, 3];
+const sum = arr.reduce((acc, current) => acc + current);
+const sum2 = arr.reduce((acc, current) => acc + current, 100);
+console.log(sum); // 6
+console.log(sum2); // 106
+```
+todo
+
+## 常见浏览器安全问题及防范措施
+### XSS
+`XSS` 全称是 `Cross Site Scripting, 跨站脚本`, 为了与 `CSS` 区分, 所以叫它 `XSS`。
+`XSS` 的最终目的是在用户浏览器中执行恶意 JavaScript 代码, 以此来获取用户的 Cookie 等敏感信息, 或实现监听用户行为等目的。
+
+#### XSS 的攻击方式
+为了实现这一目的, 主要有以下几种方法:
+1. 向服务器提交包含恶意代码的文件, 使服务器返回给客户端的文件包含恶意代码, 然后在客户端中执行, 以此来实现攻击的效果。
+常见的场景就是在评论区中提交评论, 如果前后端转义不完善的话, 包含恶意代码的评论就会储存在数据库中, 并返回给每一个请求网页的用户。
+2. 作为中间人, 在数据传输过程劫持到网络数据包, 然后修改里面的文件, 使其包含恶意代码。
+这种劫持方式包括 `WIFI路由器劫持`或`本地恶意软件`等。
+
+#### 防范 XSS 攻击的措施
+XSS 的防范措施也很简单:
+1. **永远不要相信任何用户的输入!**无论是前端还是后端, 都要对用户的输入进行转码和过滤。主要过滤的字符是: `<`、`>`、`'`、`"`、`/`、`\`。
+2. `CSP(浏览器中的内容安全策略)`, 它的核心思想就是服务器决定浏览器加载哪些资源, 具体来说可以完成以下功能:
+* 限制其他域下的资源加载。
+* 禁止向其它域提交数据。
+* 提供上报机制, 能帮助我们及时发现 XSS 攻击。
+
+3. 许多 XSS 脚本都是用来窃取 Cookie 的。因此在设置 Cookie 时, 将其设置为 `HttpOnly`, 这样 JavaScript 就无法读取 Cookie 的值了, 可以有效防范 XSS 攻击。
+
+### CSRF
+`CSRF(Cross-site request forgery)`, 即跨站请求伪造, 指的是黑客诱导用户点击链接, 打开黑客的网站, 然后黑客利用用户目前的登录状态(通常是 Cookie)发起跨站请求。
+
+#### CSRF 的攻击方式
+CSRF 攻击一般有三种方式:
+* 自动发送 GET 请求。
+* 自动发送 POST 请求。
+* 诱导点击发送 GET 请求。
+
+#### 防范 CSRF 攻击的措施
+防范 CSRF 攻击的措施主要有以下几种:
+1. 检测来源站点。方法是在服务器端检查请求头中 `Origin` 和 `Referer` 字段, 其中 `Origin` 只包含域名信息, `Referer` 则包含了具体的 URL 路径。
+当然, 这两者都是可以伪造的, 因此这种方法可靠性较差。
+2. 避免保存登录态的 `Cookie` 长时间存储在客户端中。
+这点说起来很容易, 做起来却很困难。因为无法有效判断多长的时间最合适, 因此这种方法也不太可靠。
+3. 利用 Cookie 的 `SameSite` 属性, 防范 CSRF 攻击。
+在 Cookie 当中有一个关键的字段, 可以对请求中 Cookie 的携带作一些限制, 这个字段就是 `SameSite`。
+`SameSite` 可以设置为三个值: `Strict`、`Lax` 和 `None`。
+* 在 `Strict` 模式下, 浏览器完全禁止第三方请求携带 Cookie。比如请求 `a.com` 网站只能在 `a.com` 域名当中请求才能携带 Cookie, 在其他网站请求都不能。
+* 在 `Lax` 模式, 就宽松一点了, 但是只能在 GET 方法提交表单况或者 `<a>` 标签发送 GET 请求的情况下可以携带 Cookie, 其他情况均不能。
+* 在 `None` 模式下, 也就是默认模式, 请求会自动携带上 Cookie。
+
+4. 关键请求使用验证码或者 `token` 机制。
+在一些十分关键的操作, 比如交易付款环节的请求中, 加入验证码或 `token` 机制, 可以防止 CSRF 攻击。
+验证码很好理解, 那么 `token` 机制的原理是什么呢?
+具体来说就是服务器返回客户端页面的时候, 随机生成一个字符串, 植入返回的页面中。
+之后, 客户端请求的时候带上这个字符串, 然后由服务器验证是否合法, 如果不合法则拒绝响应。这个字符串就是 `token`。一般来说, 第三方站点是无法拿到 `token` 的, 因此请求就会被服务器拒绝。
+
+## 前端如何处理大批量数据?
+### 减少 DOM 操作
+DOM 操作过多确实会非常影响性能。如果实在要求很多的 DOM 操作, 可以试试使用 `DocumentFragment` 对象, 将要操作的结果保存下来, 最后进行一次规模较大的替换。而不是每次都直接在 DOM 上插入, 这样会多次触发回流, 影响性能。
+
+### 懒加载
+这里的懒加载是广义上的。
+由于节点非常多, 很多节点其实用户并不会看到, 并没有加载的必要。因此我们可以将节点分批加载, 既保证了首屏渲染速度, 又保证了性能。这一点可以利用 `requestAnimationFrame()` 来解决。
+
+### Web Worker
+如果上面两个手段都试过了, 还是不能满足要求, 就来试试我们的大杀器—— `Web Worker` 吧。
+todo
+#### 什么是 
+https://juejin.im/post/5cb03fbee51d456e853f810b
+
+### 后端
+如果上面的方案都解决不了, 那我们就丢给后端同学吧。嘻嘻嘻。
 
 ## 常用工具函数的实现
 ### bind、call、apply
@@ -2130,14 +2903,23 @@ function flatten(arr) {
 
 ### 数组去重
 ```js
+// 最可靠
 function unique(arr) {
     return [...new Set(arr)];
 }
 
+// 有缺陷, 不会去重 NaN
 function unique(arr) {
     return arr.filter((val, index, arr) => {
         return arr.indexOf(val) === index;
-    })
+    });
+}
+
+// 改进版: 使用 includes 判断前面的元素中是否有当前元素, 可以对 NaN 进行去重
+function unique(arr) {
+    return arr.filter((val, index, arr) => {
+        return !arr.slice(0, index).includes(val);
+    });
 }
 ```
 
@@ -2176,33 +2958,54 @@ function debounce(func, time) {
 ```js
 // 使用时间戳
 function throttle(func, wait) {
-    let previous = 0;
+    let previous = +new Date();
 
-    return function() {
+    return function () {
         let now = +new Date();
         let context = this;
         let args = Array.from(arguments);
 
-        if(now - previous > wait) {
+        if (now - previous > wait) {
+            previous = +new Date();
             func.apply(context, args);
-            previous = now;
         }
     }
 }
 
 // 使用定时器
-function throttle(func, wait, ...args) {
-    let timeout;
-    let previous = 0;
+function throttle(func, wait) {
+    let timeout = null;
 
     return function() {
-        context = this;
+        let context = this;
+        let args = Array.from(arguments);
 
-        if(!timeout) {
+        if (!timeout) {
             timeout = setTimeout(function() {
+                func.apply(context, args);
                 timeout = null;
-                func.apply(context, args)
-            }, wait)
+            }, delay);
+        }
+    }
+}
+
+function throttle(func, delay) {
+    let prev = +new Date();
+    let timeout = null;
+    
+    return function(...args) {
+        let now = + new Date();
+        let context = this;
+        
+        if(now - prev > delay) {
+            prev = + new Date();
+            func.apply(context, args)
+        } else {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                prev = +new Date();
+                func.apply(context, args);
+            }, delay - (now - prev));
         }
     }
 }
@@ -2318,6 +3121,15 @@ todo
 ### 参考资料
 * [MVC, MVP 和 MVVM 的图示](https://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
 
+## js深入系列
+todo
+https://github.com/mqyqingfeng/Blog
+
+## JavaScript 如何实现按首字母对数组排序?
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+https://segmentfault.com/q/1010000002546028
+todo
+
 # React
 ## React 中的虚拟 DOM
 ### 虚拟 DOM 是什么?
@@ -2359,7 +3171,7 @@ todo
 
 ### 批处理和事务
 React 在渲染虚拟 DOM 时应用了批处理以及事务机制, 以提高渲染性能。
-这一部分参见[\[React 深入\] setState 的执行机制](https://segmentfault.com/a/1190000018260218)
+这部分应该是 `reconciler` 和 `render` 的内容, 在这里不做赘述。
 
 ### 针对性能的优化
 **在 `IE(8-11)` 和 `Edge` 浏览器中, 一个一个插入无子孙的节点, 效率要远高于插入一整个序列化完整的节点树。**
@@ -2379,20 +3191,65 @@ React 自己构造了合成事件对象 `SyntheticEvent`, 这是一个跨浏览�
 
 ### 参考资料
 * [\[React 深入\]深入分析虚拟 DOM 的渲染原理和特性](https://segmentfault.com/a/1190000018891454#item-6-11)
-* [\[React 深入\] setState 的执行机制](https://segmentfault.com/a/1190000018260218)
 
-## React 中的批处理和事务
+## 如何实现一个 Virtual DOM?
+### Virtual DOM 的更新思路
+首先我们要理解 Virtual DOM 的更新思路。主要分三步:
+1. 用 JavaScript 对象结构表示 DOM 树的结构; 然后用这个树构建一个真正的 DOM 树, 插到文档当中。
+2. 当状态变更的时候, 重新构造一棵新的对象树。然后用新的树和旧的树进行比较, 记录两棵树差异。
+3. 把2所记录的差异应用到步骤1所构建的真正的 DOM 树上, 视图就更新了。
+
+### todo
+
+### 参考资料
+* [深度剖析: 如何实现一个 Virtual DOM 算法](https://github.com/livoras/blog/issues/13)
+
+## React Fiber
+首先我们要了解到, 要插入一万个 dom 节点, 有两种方式, 一种是插入一万次一个节点, 一种是插入一百次一百个节点。第二种方法更好, 因为这样浏览器便有时间进行代码优化和合并执行。
+`jsx`是嵌套的天然结构, 在 react 15 中被翻译为递归执行的代码, 因此称 react 15 的调度器为栈调度器。栈调度器代码量少, 浅显易懂, 但缺点是不能随意 break、continue。
+react 16 的调度器将 `jsx` 翻译为链表结构, 将组件的递归更新改成链表的依次执行。如果页面有有多个虚拟 dom 树, 则将它们的根保存在一个数组中。
+react 从上到下大致有三层, 一层为虚拟 dom 层, 只负责描述结构与逻辑, 第二次为内部组件层, 负责更改 state, 执行生命周期函数, 第三层为底层渲染层, 针对不同环境有不同的渲染器。
+react 16 将内部组件层改为 fiber 这种数据结构。每个 fiber 有三个属性, return、child 和 sibling。return 指向父节点, child 指向第一个子节点, sibling 指向它右边的兄弟节点。
+### 更新过程
+在 react 15 中, 每次更新时, 都是从根组件或者 setState 后的组件开始, 更新整个子树。我们唯一能做的, 便是在某个节点中使用 shouldComponentUpdate 断开某一部分的更新, 或是优化 shouldComponentUpdate 的比较效率。
+react 16 则是将虚拟 dom 转化为 fiber 节点, 再将 fiber 节点转化为组件实例或真实 dom。它会规定一个时间段, 在这个时间段内, 能转化多少个 fiber 节点, 就更新多少个 fiber 节点。
+todo
+https://medium.com/react-in-depth/the-how-and-why-on-reacts-usage-of-linked-list-in-fiber-67f1014d0eb7
+
+## React diff 算法
+React 把 diff 算法的时间复杂度从 O(n^3) 降到了 O(n)。
+
+### 传统 diff 的复杂度 O(n^3) 是怎么来的?
+传统 diff 算法会将新树中的每个节点与旧树中的所有节点一一进行比较, 这就有 n^2 的复杂度了。
+之后还需要编辑树, 编辑的树可能发生在任何节点, 需要对树进行再一次遍历操作, 因此复杂度为 n。加起来就是 n^3。
+
+### React 的 diff 策略
+* 把树形结构按层级分解, 同级元素只与同级元素进行比较, 而不是与所有元素进行比较。
+* 给列表结构添加 `key` 属性, 标记不同的 DOM 节点, 以便在数据变化时复用。
+* React 只会匹配相同名称的组件。
+* 合并操作。调用 `setState` 方法, 并不会立即执行更新, 而是会将当前组件标记为 `dirty`。在一个事件循环结束后, React 会检查所有标记为 `dirty` 的组件, 并在下一个事件循环中对其进行更新。
+* 开发人员可以使用 `shouldComponentUpdate` 来避免不必要的 diff, 提高性能。
+
+## React 的事件系统
+React 自己实现了一套事件机制, 其将所有绑定在虚拟 DOM 上的事件映射到真正的 DOM 事件, 并将所有的事件都代理到 `document` 上, 自己模拟了事件冒泡和捕获的过程, 并且进行统一的事件分发。
+
+React 自己构造了合成事件对象 `SyntheticEvent`, 这是一个跨浏览器原生事件包装器。 它具有与浏览器原生事件相同的接口, 包括 `stopPropagation()` 和 `preventDefault()` 等等, 在所有浏览器中他们工作方式都相同。这抹平了各个浏览器的事件兼容性问题。
+
+到这里, 我们已经对 React 的事件系统有了大致了解。接下来的内容, 要回答下面五个问题:
+1. 为什么要手动绑定 `this`?
+2. React 事件和原生事件有什么区别?
+3. React 事件和原生事件的执行顺序? 是否可以混用?
+4. React 事件系统是如何实现跨浏览器兼容的?
+5. 什么是合成事件?
+
+为了回答上面的问题, 我们首先要看看, 一个事件是如何在 React 中注册、存储和触发的。
+
+### React 是如何注册、存储和触发事件的?
+首先我们来看事件是如何在 React 注册的。
 todo
 
-## diff算法
-### diff 策略
-React 总的 diff 策略如下:
-1. 对于 DOM 的跨层级移动操作特别少, 可以忽略不计。
-2. 拥有相同类名的两个组件会形成相似的树形结构; 拥有不同类名的两个组件会生成不同的树形结构。
-3. 对于同一层级的一组子节点, 通过唯一 id 进行区分。
-
-下面我们来看看以上策略在 tree diff、component diff 以及 element diff 上的应用。
-todo
+### 参考资料
+* [\[React 深入\]React 事件机制](https://segmentfault.com/a/1190000018391074)
 
 ## React 组件的生命周期有哪些?
 ### 挂载
@@ -2423,16 +3280,20 @@ todo
 * `static getDerivedStateFromError()`: 此生命周期会在后代组件抛出错误后被调用。它将抛出的错误作为参数, 并返回一个值以更新 state。
 * `componentDidCatch()`
 
-## React Fiber
-首先我们要了解到, 要插入一万个 dom 节点, 有两种方式, 一种是插入一万次一个节点, 一种是插入一百次一百个节点。第二种方法更好, 因为这样浏览器便有时间进行代码优化和合并执行。
-`jsx`是嵌套的天然结构, 在 react 15 中被翻译为递归执行的代码, 因此称 react 15 的调度器为栈调度器。栈调度器代码量少, 浅显易懂, 但缺点是不能随意 break、continue。
-react 16 的调度器将 `jsx` 翻译为链表结构, 将组件的递归更新改成链表的依次执行。如果页面有有多个虚拟 dom 树, 则将它们的根保存在一个数组中。
-react 从上到下大致有三层, 一层为虚拟 dom 层, 只负责描述结构与逻辑, 第二次为内部组件层, 负责更改 state, 执行生命周期函数, 第三层为底层渲染层, 针对不同环境有不同的渲染器。
-react 16 将内部组件层改为 fiber 这种数据结构。每个 fiber 有三个属性, return、child 和 sibling。return 指向父节点, child 指向第一个子节点, sibling 指向它右边的兄弟节点。
-### 更新过程
-在 react 15 中, 每次更新时, 都是从根组件或者 setState 后的组件开始, 更新整个子树。我们唯一能做的, 便是在某个节点中使用 shouldComponentUpdate 断开某一部分的更新, 或是优化 shouldComponentUpdate 的比较效率。
-react 16 则是将虚拟 dom 转化为 fiber 节点, 再将 fiber 节点转化为组件实例或真实 dom。它会规定一个时间段, 在这个时间段内, 能转化多少个 fiber 节点, 就更新多少个 fiber 节点。
-todo
+## 调用 setState 之后发生了什么?
+在代码中调用 setState 函数之后, React 会将传入的参数对象与组件当前的状态合并, 然后触发所谓的`调和过程(Reconciliation)`。
+所谓调和过程, 其实就是 diff + 计算最小操作。
+首先 React 通过 diff 算法找出需要更新的节点。之后, 再计算出更新所需的最小操作。这些过程都是在虚拟 DOM 中完成的。
+在计算完最小操作后, React 便会开始进行更新, 渲染页面。
+
+## 在 React 中, Element、Component 与 Instance 有什么区别?
+**元素(element)**是一个用于描述你想在屏幕上显示什么 DOM 节点或组件的普通对象。元素可以在 props 中包含其他元素。创建一个元素的代价十分低廉, 而一旦一个元素被创建, 这个对象便是不可变的。
+**组件(component)**可以通过多种方式进行定义。它可以定义为一种具有 `render()` 方法的类, 也可以简单地定义为一个函数。无论哪一种定义方式, 都会把 props 作为输入, 返回一个元素树作为输出。
+如果一个组件接受到了一些 props 作为输入, 那是由于某个特定的父组件返回了带有其 `type` 和这些 props 的元素树。这就是为何人们总说在 React 中数据的流向是单向的：从父组件到子组件。
+**实例(instance)**是你在编写类组件时使用 `this` 来指代的对象。它对于[存储局部状态以及相应生命周期事件](https://react.docschina.org/docs/component-api.html)十分有用。
+函数组件并没有实例。类组件虽然具有实例, 但并不需要你自己进行管理, React 会负责所有的实例管理工作。
+
+以上摘自[React Components, Elements, and Instances](https://react.docschina.org/blog/2015/12/18/react-components-elements-and-instances.html), 我对本文也做了翻译, 可以看[这里](https://xdyushenli.github.io/2019/12/17/react-components-elements-and-instances/#more)。
 
 ## React 组件通信
 ### 父组件向子组件通信
@@ -2440,19 +3301,31 @@ todo
 ### 跨级组件通信
 ### 没有嵌套关系组件之间的通信
 todo
-  
+
+## React Hooks
+### Hooks 解决了什么问题?
+todo
+
 ## 容器组件和展示组件的区别
-`展示组件`是指专门用于展示数据的组件, 内部不含任何业务逻辑。
-`容器组件`是指用于控制展示组件行为, 内部含有业务逻辑的组件。
+`展示组件(presentational component)`是指专门用于展示数据的组件, 内部不含任何业务逻辑。
+`容器组件(container component)`是指用于控制展示组件行为, 内部含有业务逻辑的组件。
 
 ## React Router 实现原理
 todo
 
-## Redux 实现原理6
+## Redux
+这里来说一下 Redux 的缺点吧。
+* 一个组件所需的数据必须由父组件传进去, 而不能像 Flux 一样直接从 store 中获取。
+* 当一个组件相关的数据更新时, 即使父组件不需要用到这个组件, 父组件还是会重新渲染。弥补措施就是使用 `shouldComponentUpdate` 进行判断。
+todo
 
+## React 服务端渲染
 todo
 
 # Vue 
+## 组件通信
+vuex 和 redux 都是将数据存储在内部状态中的, 页面刷新后就消失了。
+组件通信还可以利用本地化存储技术, 比如 localstorage 等, 实现跨组件通信。
 todo
 
 # 计算机网络
@@ -2470,31 +3343,23 @@ todo
 
 ### http2.0
 1. 进行了二进制分帧, 在应用层和传输层中间加入了二进制分帧层, 提高了传输效率。
-2. 实现了多路复用。一个 tcp 连接可承载任意多个双向数据流, 每个请求对应一个数据流, 数据拆分为帧进行发送, 每个帧头部都有流标识 id, 这些帧可以乱序发送, 再根据流标识 id 进行重组。为避免关键请求被阻塞, 可为数据流设置优先级, 优先级高的数据流优先处理。这一改进解决了线头阻塞问题。
+2. 实现了多路复用。一个 tcp 连接可并发多个 HTTP 请求。
+可一个 tcp 连接可承载任意多个双向数据流, 每个请求对应一个数据流, 数据拆分为帧进行发送, 每个帧头部都有流标识 id, 这些帧可以乱序发送, 再根据流标识 id 进行重组。为避免关键请求被阻塞, 可为数据流设置优先级, 优先级高的数据流优先处理。这一改进解决了线头阻塞问题。
 3. 头部压缩。为了减少请求头的大小, 客户端和服务端分别维护相同的静态字典(常用头部名称及值)和动态字典(可动态添加内容)。通过传输序号和字典查询再加上合适的压缩算法可大大减少头部大小。
 4. 服务器推送。服务器可主动向客户端推动内容。
 
-## 浏览器缓存
-缓存分为两种, 一种为`强缓存`, 一种为`协商缓存`。
-浏览器第一次请求发生后再次请求时, 会先获取该资源缓存的 header 信息, 根据缓存的 header 信息判断是否命中强缓存, 若命中则直接返回缓存文件, 本次请求不会与服务器发送通信, 但状态码为200。
-若没有命中强缓存, 浏览器会发送请求到服务器, 请求会携带资源缓存的 header 中的一些信息, 再由服务器自行判断相关信息是否命中协商缓存, 若命中则返回 304, 返回新的 header 信息以更新缓存中的 header 信息, 并告知浏览器可直接从缓存中获取该资源。否则返回最新的资源内容。
+## http 与 https 的区别
+主要有下面四点:
+1. https 协议需要到 CA 申请证书, 一般免费证书较少, 因而需要一定费用。
+2. http 是超文本传输协议, 信息是明文传输; https 则是具有安全性的 ssl 加密传输协议。
+3. http 和 https 使用的是完全不同的连接方式, 用的端口也不一样, 前者是 80, 后者是 443。
+4. http 的连接很简单, 是无状态的; https 协议是由 http + ssl 构建的可进行加密传输、身份认证的网络协议, 比 http 协议安全。
+5. http 页面响应速度比 https 快。主要是因为 http 使用 TCP 三次握手建立连接, 客户端和服务器需要交换 3 个包; 而 https 除了 TCP 的 3 个包, 还要加上 ssl 握手需要的 9 个包, 所以一共是 12 个包。
 
-### 强缓存
-与强缓存相关的字段有两个。
-1. `expires`: 是 http1.0 的标准, 其值为一 GMT 格式的时间字符串, 若发送请求的时间在 expires 之前, 那么本地缓存有效, 否则就会发送请求到服务器来获取资源。
-2. `cache-control`: 是 http1.1 的标准。主要是利用该字段的 max-age 值来判断, 该值加上第一次资源请求的时间计算出一个资源有效时间。若发送时间在该资源有效时间之内, 则本地缓存有效。否则发送请求。`cache-control` 还有几个常用的值。
- 1. `max-age`: 是一个数字, 用于配合资源请求时间计算资源过期时间。
- 2. `no-cache`: 不使用本地缓存, 需使用协商缓存。先与服务器通信确认资源是否被修改, 若之前的响应中存在 ETag(服务器生成的资源的唯一标识, 资源更改, ETag 也更改), 则请求时会与服务器验证资源是否被修改, 若资源未更改, 则可避免重新下载。
- 3. `no-store`: 禁用浏览器缓存数据, 每次请求该资源都需要重新发送请求。
- 4. `public`: 该资源可被所有用户缓存, 包括CDN中间代理服务器和终端用户。
- 5. `private`: 只允许终端用户缓存, 不允许CDN等中级缓存器对其进行缓存。
-注意: 若两字段同时存在, `cache-control` 的优先级高于 `expires`。
+### https 的工作流程
 
-### 协商缓存
-协商缓存涉及到的字段主要有两组(四个), 这两组都是成对出现的, 即第一次请求头带上某个字段, 后续的请求会带上相对应的请求字段。
-1. `Last-Modified`、`If-Modified-Since`: 两者均为GMT格式的时间字符串。第一次请求返回的响应头中含有 `Last-Modified` 字段, 表示该资源在服务器上最后的修改时间。之后的请求同一资源时, 头部中会含有 `If-Modified-Since` 字段, 其值与 `Last-Modified` 一致。服务器收到请求后, 将资源的最后修改时间与 `If-Modified-Since` 做比较, 若修改过, 则返回最新的资源, 并在响应头中更新 `Last-Modified` 的时间。否则即为协商缓存, 返回 304, 浏览器从缓存中加载资源。
-2. `Etag`、`If-None-Match`: 这两个值为服务器生成的每个资源的唯一标识符, 只要资源有变化就改变这个值。判断流程与上一组类似, 只不过是通过 `Etag` 判断资源是否被修改。不同的是, 当服务器返回 304 时, 响应头中还会包含 `Etag`, 哪怕资源没有变化。
-注意: `Last-Modified` 与 `Etag` 共存的情况下, `Etag` 的优先级高于 `Last-Modified`。
+![https](/images/interview-experence/31.png)
+
 
 ## 三次握手四次挥手
 ### 三次握手
@@ -2510,12 +3375,7 @@ todo
 3. 服务器向客户端发送`终止报文段(FIN segment)`。
 4. **客户端向服务器发送一个该报文段的确认报文段, 同时释放资源。服务器在收到确认后, 也释放资源。**
 
-## 从输入 url 到显示页面发生了什么?
-todo
-## cookie、sessionStorage、localStorage 以及 webStorage 有什么区别?
-cookie 是后端通过 `Set-Cookie` 字段设置的, 
-
-## 常用 HTTP 请求方法
+## 常用 HTTP 请求方法及区别
 | 方法 | 描述 |
 | -- | -- |
 | GET | 请求指定的页面信息, 并返回实体主体 |
@@ -2525,6 +3385,54 @@ cookie 是后端通过 `Set-Cookie` 字段设置的,
 | DELETE | 请求服务器删除指定的页面 |
 | OPTIONS | 用于获取服务器所支持的通信选项, 比如方法、允许请求的域名等 |
 | TRACE | 回显服务器收到的请求, 主要用于测试或诊断 |
+| CONNECT | 把服务器作为跳板, 让服务器代为访问其他网页 |
+| PATCH | 对 PUT 方法的补充, 用来对已有资源进行局部更新 |
+
+### GET 与 POST 的区别
+关于这个问题, 答案分两部分。一部分来自 w3c, 属于标准答案:
+* GET 在浏览器回退时是无害的, 而 POST 会再次提交请求。
+* GET 产生的 URL 地址可以被 Bookmark, 而POST不可以。
+* GET 请求会被浏览器主动 cache, 而 POST 不会, 除非手动设置。
+* GET 请求只能进行 URL 编码, 而 POST 支持多种编码方式。
+* GET 请求参数会被完整保留在浏览器历史记录里, 而 POST 中的参数不会被保留。
+* GET 请求在 URL 中传送的参数是有长度限制的(一般浏览器设置 URL 最大长度为 2K), 而 POST 没有。
+* 对参数的数据类型, GET 只接受 ASCII 字符, 而 POST 没有限制。
+* GET 比 POST 更不安全, 因为参数直接暴露在 URL 上, 所以不能用来传递敏感信息。
+* GET 参数通过 URL 传递, POST 放在请求体中。
+
+另一部分, 就涉及到 TCP 的知识了。
+GET 与 POST 的另一点不同, 在于其发送的 TCP 包的数量不同。**GET 方法发送一个 TCP 包, POST 方法发送两个 TCP 包。**
+具体来说就是, 对于 GET 方式的请求, 浏览器会把 http header 和 data 一并发送出去, 服务器响应 `200 ok`(返回数据)。
+而对于 POST, 浏览器先发送 header, 服务器响应 `100 continue`, 浏览器再发送 data, 服务器响应 `200 ok`(返回数据)。
+应该注意的是, **并不是所有浏览器都会在POST中发送两次包, Firefox就只发送一次。**
+
+### POST、PUT、PATCH 的区别
+首先我们要了解一个概念, `幂等(Idempotency)`。
+在 HTTP 中经常能见到这个概念。我们常说的某个请求方法是幂等的, 就是说, 使用该方法传输同样的数据, 无论传输多少次, 结果都是相同的(这里的结果不仅仅包括返回的结果, 也包括其对服务器产生的影响)。典型的幂等方法有: PUT 和 GET。
+
+相对应, 非幂等就是说一个请求执行若干次, 其结果是不同的。这类请求方法的典型是: POST、PATCH 和 DELETE。
+以 POST 为例, 
+
+之所以要划分幂等和非幂等的概念, 主要是因为**幂等请求在请求失败后可以放心得重新请求, 而非幂等请求则不能。**如提交一个支付(非幂等)时网络超时了, 客户端不会允许再次提交相同的请求, 如果超时发生在服务端返回客户端的过程中则会造成两次支付。
+
+另外一个概念是`安全(safe)`。如果说一个 HTTP 方法是安全的, 是指这是个不会修改服务器的数据的方法。也就是说, 这是一个对服务器只读操作的方法。安全的方法只有 GET、HEAD 与 OPTIONS, 其他请求方法都是非安全的。
+
+之后便要来阐释下具体的区别了。
+首先是 POST。**在语义上, POST 表示新建资源, 是非幂等的。**多次执行, 将会导致多条相同的数据被创建。
+
+之后是 PUT。**在语义上, PUT 表示更新资源(其实叫替换或创建更准确), 是幂等的。**
+客户端对一个 URI 发送一个资源, 如果服务器之前没有资源 , 那么服务器就应该将客户端提交的放在这个 URI 上; 如果服务器在这个 URI 下如果已经又了一个资源, 那么此刻服务器应该将其替换成客户端提交的资源。由此保证了PUT的幂等性。
+总结一下: PUT 方法, 其行为与其字面意义一致, 就是将客户端资源放在请求的 URI 位置。至于服务器到底是创建还是更新, 由服务器自己决定, 客户端也可以根据服务器返回的状态码来区别。
+注意: **通过上面可以知道, 如果用 PUT 来更新资源, 需要客户端提交资源全部信息; 如果只有部分信息, 不应该使用 PUT(因为服务器使用客户端提交的对象整体替换服务器的资源)。**
+
+最后是 PATCH。**在语义上, 其与 PUT 类似, 均表示更新资源。但 PATCH 是局部更新, 且是非幂等的。**
+那么问题来了, 为什么 PUT 和 PATCH 在语义上都表示更新资源, 但 PATCH 不是幂等的呢?
+这里我们可以看看在 [RFC5789](https://tools.ietf.org/html/rfc5789) 中对于 PUT 和 PATCH 的描述:
+> PUT 和 PATCH 请求的区别体现在服务器处理封闭实体以修改 Request URI 指向的资源的方式。
+> 在一个 PUT 请求中, 封闭实体被认为是存储在源服务器上的资源的修改版本, 并且客户端正在请求替换存储的版本。
+> 而对于 PATCH 请求, 封闭实体中包含了一组描述当前保留在源服务器上的资源应该如何被修改来产生一个新版本的指令。PATCH 方法影响由 Request URI 标志的资源, 而且它也可能对其他资源有副作用; 也就是, 通过使用 PATCH, 新资源可能被创造, 或者现有资源被修改。
+
+**也就是说, PUT 传输的是更新后的资源, 服务器收到后只需要进行创建或替换就好, 因此是幂等的; 而 PATCH 传输的是一系列用于更新的指令, 这些指令在执行的过程中可能会产生副作用, 所以 PATCH 是非幂等的。**
 
 ## 常用状态码
 状态码有五个主要的分类:
@@ -2569,8 +3477,15 @@ cookie 是后端通过 `Set-Cookie` 字段设置的,
 |504| 充当网关或代理的服务器, 未及时从远端服务器获取请求 |
 |505| 服务器不支持请求的 HTTP 协议的版本, 无法完成处理 |
 
+## Cookie: token 与 session 的爱恨情仇
+todo
+
 ## 内网穿透
-todo 如何进行前后端联调?
+https://zhuanlan.zhihu.com/p/30351943
+### 什么是内网穿透?
+
+### 为什么我们需要内网穿透?
+todo
 
 ## Fetch
 Fetch API 提供了一个获取资源的接口(包括跨域请求), 用于访问和操作 HTTP 请求。
@@ -2646,18 +3561,101 @@ todo
 * [WindowOrWorkerGlobalScope.fetch()](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch)
 * [Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)
 
-## WebWorker
+## VPN 相关
 todo
+VPN 对于用户的安全还是有一定作用的, 不过要小心 VPN 提供商对用户信息的窃取。
+VPN属于网络安全设备，是为了防止第三方非法入侵的设备，起到保护内部网络不受入侵的作用。 它是目前最常用的信息安全隧道技术，是利用加密技术在公网上封装出一个数据通讯隧道，利用虚拟专用网建立一条加密的可靠的数据连接信道，让信息传递更加安全。
+网络隧道技术?
 
-## ServiceWorker
-Service workers 本质上充当Web应用程序与浏览器之间的代理服务器, 也可以在网络可用时作为浏览器和网络间的代理。它们旨在(除其他之外)使得能够创建有效的离线体验, 拦截网络请求并基于网络是否可用以及更新的资源是否驻留在服务器上来采取适当的动作。他们还允许访问推送通知和后台同步API。
-简单来说, ServiceWorker 允许应用完全控制浏览器的网络行为, 修改网络请求。你可以完全控制应用在特定情形(最常见的情形是网络不可用)下的表现。可以通过ServiceWorker创建离线应用。
-Service worker运行在worker上下文, 因此它不能访问DOM。相对于驱动应用的主JavaScript线程, 它运行在其他线程中, 所以不会造成阻塞。它设计为完全异步, 同步API(如XHR和localStorage)不能在service worker中使用。
-出于安全考量, Service workers只能由HTTPS承载, 毕竟修改网络请求的能力暴露给中间人攻击会非常危险。在Firefox浏览器的用户隐私模式, Service Worker不可用。
-参考链接
-https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
-https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
-todo
+一 VPN概述
+　　
+　　 为了使得远程的企业员工可以与总部实时的交换数据信息。企业得向ISP租用网络提供服务。但公用网容易遭受各种安全攻击（比如拒绝服务攻击来堵塞正常的网络服务，或窃取重要的企业内部信息）
+　　
+　　 VPN这个概念的引进就是用来解决这个问题。它是利用公用网络来连接到企业私有网络。但在VPN中，用安全机制来保障机密型，真实可靠行，完整性严格的访问控制。这样就建立了一个逻辑上虚拟的私有网络。虚拟局域网提供了一个经济有效的手段来解决通过公用网络安全的交换私有信息。
+　　
+　　 二 VPN特性
+　　
+　　 一般VPN所具备的优点有以下几点：
+　　
+　　 a) 最小成本：无须购买网络设备和专用线路覆盖所有远程用户
+　　
+　　 b) 责任共享：通过购买公用网的资源，部分维护责任迁移至provider（更专业，有经验，是操作，维护成本降低）。
+　　
+　　 c) 安全性：
+　　
+　　 d) 保障Qos
+　　
+　　 e) 可靠性：如果一个VPN节点坏了，可以一个替换VPN建立起来绕过他，这种恢复工作是得VPN操作可以尽可能的延续
+　　
+　　 f) 可扩展性：可以通过从公用网申请更多得资源达到非常容易的扩展VPN,或者协商重构VPN
+　　
+　　 其中安全性是vpn最重要的一个特性,也是各类vpn产品所必须具备和支持的要素.
+　　
+　　 三 VPN的安全技术
+　　
+　　 目前VPN主要采用四项技术来保证安全，这四项技术分别是隧道技术（Tunneling）、加解密技术（Encryption & Decryption）、密钥管理技术（Key Management）、使用者与设备身份认证技术（Authentication）。
+　　
+　　 加解密技术是数据通信中一项较成熟的技术，VPN可直接利用现有技术。
+　　
+　　 密钥管理技术的主要任务是如何在公用数据网上安全地传递密钥而不被窃取。现行密钥管理技术又分为SKIP与ISAKMP/OAKLEY两种。SKIP主要是利用Diffie-Hellman的演算法则，在网络上传输密钥；在ISAKMP中，双方都有两把密钥，分别用于公用、私用。
+　　
+　　 身份认证技术最常用的是使用者名称与密码或卡片式认证等方式。
+　　
+　　 隧道指的是利用一种网络协议来传输另一种网络协议，它主要利用网络隧道协议来实现这种功能。网络隧道技术涉及了三种网络协议，即网络隧道协议、隧道协议下面的承载协议和隧道协议所承载的被承载协议。网络隧道技术是个关键技术,这项vpn的基本技术也是本文要详细和阐述的.
+　　
+　　 四 网络隧道协议
+　　
+　　 网络隧道是指在公用网建立一条数据通道（隧道），让数据包通过这条隧道传输。现有两种类型的网络隧道协议，一种是二层隧道协议，用于传输二层网络协议，它主要应用于构建远程访问虚拟专网（AccessVPN）；另一种是三层隧道协议，用于传输三层网络协议，它主要应用于构建企业内部虚拟专网（IntranetVPN）和扩展的企业内部虚拟专网（Extranet VPN）。
+　　
+　　 二层隧道协议
+　　
+　　 第二层隧道协议是先把各种网络协议封装到PPP中，再把整个数据包装入隧道协议中。这种双层封装方法形成的数据包靠第二层协议进行传输。第二层隧道协议主要有以下三种：第一种是由微软、Ascend、3COM 等公司支持的 PPTP（Point to Point Tunneling Protocol，点对点隧道协议），在WindowsNT4.0以上版本中即有支持。
+　　
+　　 第二种是Cisco、北方电信等公司支持的L2F（Layer2Forwarding，二层转发协议），在 Cisco 路由器中有支持。
+　　
+　　 第三种由 IETF 起草，微软 Ascend 、Cisco、 3COM 等公司参与的 L2TP（Layer 2TunnelingProtocol，二层隧道协议）结合了上述两个协议的优点，L2TP协议是目前IETF的标准，由IETF融合PPTP与L2F而形成。这里就主要介绍一下 L2TP 网络协议。
+　　
+　　 其中，LAC 表示 L2TP 访问集中器（L2TPAccessConcentrator），是附属在交换网络上的具有 PPP 端系统和 L2TP 协议处理能力的设备，LAC 一般就是一个网络接入服务器 NAS（Network Access Server）它用于为用户通过 PSTN/ISDN 提供网络接入服务；LNS 表示 L2TP 网络服务器（L2TP Network Server），是 PPP 端系统上用于处理 L2TP 协议服务器端部分的软件。
+　　
+　　 在一个LNS和LAC对之间存在着两种类型的连接，一种是隧道（tunnel）连接，它定义了一个LNS和LAC对；另一种是会话（session）连接，它复用在隧道连接之上，用于表示承载在隧道连接中的每个 PPP 会话过程。
+　　
+　　 L2TP连接的维护以及PPP数据的传送都是通过L2TP消息的交换来完成的，这些消息再通过 UDP的1701端口承载于TCP/IP之上。L2TP消息可以分为两种类型，一种是控制消息，另一种是数据消息。控制消息用于隧道连接和会话连接的建立与维护。数据消息用于承载用户的 PPP 会话数据包。 L2TP 连接的维护以及 PPP 数据的传送都是通过 L2TP 消息的交换来完成的，这些消息再通过UDP的1701端口承载于 TCP/IP 之上。
+　　
+　　 控制消息中的参数用AVP值对（AttributeValuePair）来表示，使得协议具有很好的扩展性；在控制消息的传输过程中还应用了消息丢失重传和定时检测通道连通性等机制来保证了 L2TP 层传输的可靠性。数据消息用于承载用户的 PPP 会话数据包。L2TP 数据消息的传输不采用重传机制，所以它无法保证传输的可靠性，但这一点可以通过上层协议如TCP等得到保证；数据消息的传输可以根据应用的需要灵活地采用流控或不流控机制，甚至可以在传输过程中动态地使用消息序列号从而动态地激活消息顺序检测和流量控制功能；在采用流量控制的过程中，对于失序消息的处理采用了缓存重排序的方法来提高数据传输的有效性。
+　　
+　　 L2TP 还具有适用于VPN 服务的以下几个特性：
+　　
+　　 · 灵活的身份验证机制以及高度的安全性
+　　
+　　 L2TP 可以选择多种身份验证机制（CHAP、PAP等），继承了PPP的所有安全特性，L2TP 还可以对隧道端点进行验证，这使得通过L2TP所传输的数据更加难以被攻击。而且根据特定的网络安全要求还可以方便地在L2TP之上采用隧道加密、端对端数据加密或应用层数据加密等方案来提高数据的安全性。
+　　
+　　 · 内部地址分配支持
+　　
+　　 LNS可以放置于企业网的防火墙之后，它可以对于远端用户的地址进行动态的分配和管理，可以支持DHCP和私有地址应用（RFC1918）等方案。远端用户所分配的地址不是Internet地址而是企业内部的私有地址，这样方便了地址的管理并可以增加安全性。
+　　
+　　 · 网络计费的灵活性
+　　
+　　 可以在LAC和LNS两处同时计费，即ISP处（用于产生帐单）及企业处（用于付费及审记）。L2TP能够提供数据传输的出入包数，字节数及连接的起始、结束时间等计费数据，可以根据这些数据方便地进行网络计费。
+　　
+　　 · 可靠性
+　　
+　　 L2TP 协议可以支持备份 LNS，当一个主 LNS 不可达之后，LAC（接入服务器）可以重新与备份 LNS 建立连接，这样增加了 VPN 服务的可靠性和容错性。
+　　
+　　 · 统一的网络管理
+　　
+　　 L2TP协议将很快地成为标准的RFC协议，有关L2TP的标准MIB也将很快地得到制定，这样可以统一地采用 SNMP 网络管理方案进行方便的网络维护与管理。
+　　
+　　 三层隧道协议
+　　
+　　 第三层隧道协议是把各种网络协议直接装入隧道协议中，形成的数据包依靠第三层协议进行传输。三层隧道协议并非是一种很新的技术，早已出现的 RFC 1701 Generic Routing Encapsulation（GRE）协议就是个三层隧道协议。新出来的 IETF 的 IP 层加密标准协议 IPSec 协议也是个三层隧道协议。
+　　
+　　 IPSec（IPSecurity）是由一组RFC文档组成，定义了一个系统来提供安全协议选择、安全算法，确定服务所使用密钥等服务，从而在IP层提供安全保障。它不是一个单独的协议，它给出了应用于IP层上网络数据安全的一整套体系结构，它包括网络安全协议 Authentication Header（AH）协议和 Encapsulating Security Payload（ESP）协议、密钥管理协议Internet Key Exchange （IKE）协议和用于网络验证及加密的一些算法等。下面就IPSec的认证与加密机制和协议分别做一些详细说明。
+　　
+　　 1． IPSec认证包头（AH）：
+　　
+　　 它是一个用于提供IP数据报完整性和认证的机制。其完整性是保证数据报不被无意的或恶意的方式改变，而认证则验证数据的来源（识别主机、用户、网络等）。AH本身其实并不支持任何形式的加密，它不能保证通过Internet发送的数据的可信程度。AH只是在加密的出口、进口或使用受到当地政府限制的情况下可以提高全球Intenret的安全性。当全部功能实现后，它将通过认证IP包并且减少基于IP欺骗的攻击机率来提供更好的安全服务。AH使用的包头放在标准的IPv4和IPv6包头和下一个高层协议帧（如TCP、UDP、ICMP等）之间。
+　　
+　　 AH协议通过在整个IP数据报中实施一个消息文摘计算来提供完整性和认证服务。一个消息文摘就是一个特定的单向数据函数，它能够创建数据报的唯一的数字指纹。消息文摘算法的输出结果放到 AH包头的认证数据（Authentication_Data）区。消息文摘5算法（MD5）是一个单向数学函数。当应用到分组数据中时，它将整个数据分割成若干个128比特的信息分组。每个128比特为一组的信息是大分组数据的压缩或摘要的表示。当以这种方式使用时，MD5只提供数字的完整性服务。一个消息文摘在被发送之前和数据被接收到以后都可以根据一组数据计算出来。如果两次计算出来的文摘值是一样的，那么分组数据在传输过程中就没有被改变。这样就防止了无意或恶意的窜改。在使用HMAC－MD5认证过的数据交换中，发送者使用以前交换过的密钥来首次计算数据报的64比特分组的MD5文摘。从一系列的16比特中计算出来的文摘值被累加成一个值，然后放到AH包头的认证数据区，随后数据报被发送给接收者。接收者也必须知道密钥值，以便计算出正确的消息文摘并且将其与接收到的认证
 
 # 数据结构与算法
 ## 堆
@@ -2798,21 +3796,382 @@ function insert(val) {
 * [最大/最小堆的排序](https://zhuanlan.zhihu.com/p/40782547)
 
 ## 红黑树
+**红黑树是一种自平衡的二叉查找树。**除了符合 BST 的基本特性外, 还具有如下性质:
+1. 节点只能是红色和黑色二者之一。
+2. 根节点必须是黑色。
+3. 红黑树的叶子节点为 `null` 节点。所有叶子节点都是黑色的。
+4. 每个红色节点的两个子节点都是黑色。即从根节点到任意叶子节点的路径上, 不能有两个连续的红色节点。但可以有连续的黑色节点。
+5. 从任意一节点到其每个叶子的所有路径, 都包含相同数目的黑色节点。
+
+这些性质, 保证了红黑树的自平衡性。
+
+当有节点插入或删除时, 常常会破坏红黑树的性质。这个时候, 就需要执行一些操作来维持红黑树的性质。这种操作有两种:
+* **变色**。将红色节点改为黑色, 或将黑色节点改为红色。
+* **旋转**。旋转分为**左旋转**和**右旋转**。描述起来可能不太方便, 直接上图。
+
+![左旋转](/images/interview-experence/28.jpg)
 
 
-# js深入系列
+![右旋转](/images/interview-experence/29.jpg)
+
+总体来说, 恢复红黑树的性质需要少量的颜色变更(实际是非常快速的)和不超过三次树旋转(对于插入操作是两次)。
+对于插入操作, 有五种情况。
+对于删除操作, 有六种情况。
+这里就不展开了, 具体参见[维基百科: 红黑树](https://zh.wikipedia.org/wiki/%E7%BA%A2%E9%BB%91%E6%A0%91)
+
+### 参考资料
+* [什么是红黑树?](https://zhuanlan.zhihu.com/p/31805309)
+* [维基百科: 红黑树](https://zh.wikipedia.org/wiki/%E7%BA%A2%E9%BB%91%E6%A0%91)
+
+## AVL 树
+为了避免二叉搜索树的最差情况, 还可以利用平衡的二叉搜索树, 即 `AVL 树`。使用 AVL 树, 我们可以用 O(logn) 的时间插入元素, 同时用 O(1) 的时间得到所有节点的中位数。
+下面我们便来详细介绍一下 AVL 树。
+
+### AVL 树的简介
+AVL树是最早被发明的自平衡二叉查找树。
+在AVL树中, 任一节点对应的两棵子树的最大高度差为 `1`, 因此它也被称为`高度平衡树`。
+查找、插入和删除在平均和最坏情况下的时间复杂度都是 O(logn)。
+增加和删除元素的操作则可能需要借由一次或多次树旋转, 以实现树的重新平衡。
+在 AVL 树中, 有一个概念也十分重要, 那就算节点的`平衡因子`。节点的平衡因子是它的左子树的高度减去它的右子树的高度(有时相反)。**平衡因子为 `1`、`0` 或 `-1` 的节点被认为是平衡的。平衡因子为 `-2` 或 `2` 的节点被认为是不平衡的, 并需要重新平衡这个树。**具体的操作就是旋转。平衡因子可以直接存储在每个节点中。
+
+### AVL 树的操作
+#### 插入
+假设平衡因子是左子树的高度减去右子树的高度所得到的值, 又假设由于在二叉排序树上插入节点而失去平衡的最小子树根节点的指针为 `a`(即 `a` 是离插入点最近, 且平衡因子绝对值超过 `1` 的祖先节点), 则失去平衡后的情况可归纳为下列四种:
+1. **单向右旋平衡处理LL**: 由于在 `a` 的左子树根节点的左子树上插入节点,  `a` 的平衡因子由 1 增至 2, 致使以 `a` 为根的子树失去平衡, 则需进行一次右旋转操作。
+2. **单向左旋平衡处理RR**: 由于在 `a` 的右子树根节点的右子树上插入节点,  `a` 的平衡因子由 -1 变为 -2, 致使以 `a` 为根的子树失去平衡, 则需进行一次左旋转操作。
+3. **双向旋转(先左后右)平衡处理LR**: 由于在 `a` 的左子树根节点的右子树上插入节点,  `a` 的平衡因子由 1 增至 2, 致使以 `a` 为根的子树失去平衡, 则需进行两次旋转(先左旋后右旋)操作。
+4. **双向旋转(先右后左)平衡处理RL**: 由于在 `a` 的右子树根节点的左子树上插入节点,  `a` 的平衡因子由 -1 变为 -2, 致使以 `a` 为根的子树失去平衡, 则需进行两次旋转(先右旋后左旋)操作。
+
+更直观一点, 可以用下图来说明。
+
+![旋转](/images/interview-experence/30.png)
+
+#### 删除
+从AVL树中删除, 可以通过把要删除的节点向下旋转成一个叶子节点, 接着直接移除这个叶子节点来完成。因为在旋转成叶子节点期间最多有log n个节点被旋转, 而每次AVL旋转耗费固定的时间, 所以删除处理在整体上耗费O(log n) 时间。
+
+#### 搜索
+可以像普通二叉查找树一样的进行, 所以耗费O(log n)时间, 因为AVL树总是保持平衡的。不需要特殊的准备, 树的结构不会由于查找而改变。(这是与伸展树搜索相对立的, 它会因为搜索而变更树结构。)
+
+### 参考资料
+* [维基百科: AVL 树](https://zh.wikipedia.org/wiki/AVL%E6%A0%91)
+
+## 最小编辑距离
+最近在编写 Virtual DOM 的实现, 刚好遇到了如何比较列表元素的问题。
+将元素列表抽象成以 key 排列的列表, 那么求旧树到新树的最小操作问题, 就变成了如何求两个字符串间的最小`编辑距离(edit distance)`的问题。因此做了一些研究。
+最小编辑距离问题和寻径问题一样, 都可以用动态规划来解决。
+
+莱文斯坦距离, 又称Levenshtein距离, 是编辑距离的一种。指两个字串之间, 由一个转成另一个所需的最少编辑操作次数。
+
+允许的编辑操作包括：
+
+将一个字符替换成另一个字符
+插入一个字符
+删除一个字符
+俄罗斯科学家弗拉基米尔·莱文斯坦在1965年提出这个概念。
 todo
-https://github.com/mqyqingfeng/Blog
+
+### 简介
+给定两个字符串 a 和 b, a 与 b 之间的编辑距离是指将 a 转化为 b 的操作数。其中只允许以下三种操作:
+1. 插入一个字符。
+2. 删除一个字符。
+3. 替换一个字符。
+
+求 a 与 b 之间的最小编辑距离。
+
+### 思路描述
+在这里, 我不仅会描述最终的模式是怎么样的, 更会描述最终的模式是怎么来的。
+所谓动态规划, 就是将大问题分解为小问题, 最后通过合并小问题的答案来解决大问题的过程。
+https://www.bilibili.com/video/av51808367?from=search&seid=10728745868910882791
+https://www.dreamxu.com/books/dsa/dp/edit-distance.html
+
+# 浏览器
+## 浏览器缓存
+缓存分为两种, 一种为`强缓存`, 一种为`协商缓存`。
+浏览器第一次请求发生后再次请求时, 会先获取该资源缓存的 header 信息, 根据缓存的 header 信息判断是否命中强缓存, 若命中则直接返回缓存文件, 本次请求不会与服务器发送通信, 但状态码为200。
+若没有命中强缓存, 浏览器会发送请求到服务器, 请求会携带资源缓存的 header 中的一些信息, 再由服务器自行判断相关信息是否命中协商缓存, 若命中则返回 304, 返回新的 header 信息以更新缓存中的 header 信息, 并告知浏览器可直接从缓存中获取该资源。否则返回最新的资源内容。
+
+### 强缓存
+与强缓存相关的字段有两个。
+1. `expires`: 是 http1.0 的标准, 其值为一 GMT 格式的时间字符串, 若发送请求的时间在 expires 之前, 那么本地缓存有效, 否则就会发送请求到服务器来获取资源。
+2. `cache-control`: 是 http1.1 的标准。主要是利用该字段的 max-age 值来判断, 该值加上第一次资源请求的时间计算出一个资源有效时间。若发送时间在该资源有效时间之内, 则本地缓存有效。否则发送请求。`cache-control` 还有几个常用的值。
+ 1. `max-age`: 是一个数字, 用于配合资源请求时间计算资源过期时间。
+ 2. `no-cache`: 不使用本地缓存, 需使用协商缓存。先与服务器通信确认资源是否被修改, 若之前的响应中存在 ETag(服务器生成的资源的唯一标识, 资源更改, ETag 也更改), 则请求时会与服务器验证资源是否被修改, 若资源未更改, 则可避免重新下载。
+ 3. `no-store`: 禁用浏览器缓存数据, 每次请求该资源都需要重新发送请求。
+ 4. `public`: 该资源可被所有用户缓存, 包括CDN中间代理服务器和终端用户。
+ 5. `private`: 只允许终端用户缓存, 不允许CDN等中级缓存器对其进行缓存。
+注意: 若两字段同时存在, `cache-control` 的优先级高于 `expires`。
+
+### 协商缓存
+协商缓存涉及到的字段主要有两组(四个), 这两组都是成对出现的, 即第一次请求头带上某个字段, 后续的请求会带上相对应的请求字段。
+1. `Last-Modified`、`If-Modified-Since`: 两者均为GMT格式的时间字符串。第一次请求返回的响应头中含有 `Last-Modified` 字段, 表示该资源在服务器上最后的修改时间。之后的请求同一资源时, 头部中会含有 `If-Modified-Since` 字段, 其值与 `Last-Modified` 一致。服务器收到请求后, 将资源的最后修改时间与 `If-Modified-Since` 做比较, 若修改过, 则返回最新的资源, 并在响应头中更新 `Last-Modified` 的时间。否则即为协商缓存, 返回 304, 浏览器从缓存中加载资源。
+2. `Etag`、`If-None-Match`: 这两个值为服务器生成的每个资源的唯一标识符, 只要资源有变化就改变这个值, 如果资源没有改变就保持原来的值。判断流程与上一组类似, 只不过是通过 `Etag` 判断资源是否被修改。不同的是, 当服务器返回 304 时, 响应头中还会包含 `Etag`, 哪怕资源没有变化。
+注意: `Last-Modified` 与 `Etag` 共存的情况下, `Etag` 的优先级高于 `Last-Modified`。
+
+这里有一个小问题。既然已经有了 `Last-Modified`, 那为什么还要 `Etag` 呢?
+主要有两点原因:
+1. 如果在服务器上, 一个资源被修改了, 但其实际内容根本没发生改变, 则会因为 `Last-Modified` 时间匹配不上而返回了整个实体给客户端(即使客户端缓存里有个一模一样的资源)。这个时候就需要 `Etag` 字段了。客户端会保留该 `ETag` 字段, 并在下一次请求时将其一并带过去给服务器。服务器只需要比较客户端传来的 `ETag` 跟自己服务器上该资源的 `ETag` 是否一致, 就能很好地判断资源相对客户端而言是否被修改过了。
+2. `Last-Modified` 的精度是秒。如果我们在一秒内多次修改了文件, 同时返回给客户端的是第一次修改后的文件, 则仅凭 `Last-Modified` 是无法判断出客户端的资源是不是最新的。这个时候, 也需要 `Etag` 辅助我们的判断。
+
+### 缓存位置
+那么问题来了, 不管是强缓存还是协商缓存, 是存储在哪里的呢? 下面我们便来回答这个问题。
+浏览器中的缓存位置有四种, 按照优先级从高到低排列分别是:
+* Service Worker Cache
+* Memory Cache
+* Disk Cache
+* Push Cache
+
+在浏览器发送请求之前, 会依次检查上面四个缓存, 尝试找到符合要求的资源。如果没有找到, 才会向服务器发送请求。
+下面我们一个个来看一下。
+
+#### Service Worker Cache
+`Service Worker` 借鉴了 `Web Worker` 的思路, 即让 JS 运行在主线程之外, 由于它脱离了浏览器的窗体, 因此无法直接访问DOM。虽然如此, 但它仍然能帮助我们完成很多有用的功能, 比如离线缓存、消息推送和网络代理等功能。其中的离线缓存就是 `Service Worker Cache`。
+具体的内容可以参见[Service Worker](#Service-Worker)。
+
+#### Memory Cache & Disk Cache
+`Memory Cache` 指内存缓存。从效率上讲它是最快的, 但是从存活时间来讲又是最短的。当渲染进程结束后, 内存缓存也就不存在了。
+`Disk Cache` 就是存储在磁盘中的缓存。从存取效率上讲是比内存缓存慢的, 但是优势在于存储容量和存储时长。
+那么问题来了, 浏览器如何决定将资源放进内存还是硬盘呢？主要策略如下：
+* 比较大的 JS、CSS 文件会直接被丢进磁盘, 反之丢进内存。
+* 当内存占用率比较高的时候, 文件优先进入磁盘。
+
+#### Push Cache
+提到这个, 就不得不提到 `Server Push`。简单来说, `Server Push` 能让 `HTTP/2` 服务器在客户端请求资源之前将资源发送到符合 `HTTP/2` 的客户端。而发送到客户端的资源, 会被放入 `Push Cache` 即推送缓存当中。
+由于 `Push Cache` 是 `HTTP/2` 中的内容, 所以现在应用的并不广泛, 各个浏览器之间的支持也有一定差异。但随着 `HTTP/2` 的推广, 它的应用会越来越广泛。
+
+## 从输入 url 到显示页面发生了什么?
+### 网络篇
+首先我们来看看, 在请求的发送和接收方面, 浏览器做了什么。
+
+#### 请求发送
+1. 构建请求: 浏览器首先会构造一个请求。
+2. 查找强缓存: 先检查请求是否命中强缓存。如果命中, 则直接返回; 否则进入下一步。
+3. DNS 解析: 通过域名解析服务器的 IP 地址。浏览器在解析某个域名后, 会将其存入 DNS 缓存中。在下次解析相同域名时, 直接返回, 不需要与 DNS 服务器发生交互。
+4. 建立 TCP 连接: 通过三次握手, 建立 TCP 连接。值得注意的是, **Chrome 在同一个域名下最多能同时保持 6 个 TCP 连接, 用于并行发送请求。**
+5. 发送 HTTP 请求: HTTP 请求一般有三部分, `请求行`、`请求头`和`请求体`。
+首先是`请求行`。`请求行`由三部分组成, `请求方法`、`请求 URI` 和 `HTTP 版本协议`。
+```js
+// 请求方法是GET, 路径为根路径, HTTP协议版本为1.1
+GET / HTTP/1.1
+```
+ 之后是`请求头`, 包含一些说明性信息。
+ 最后是`请求体`, **在 http 1.0 中只有在 POST 方法下存在请求体, 在 http1.1 后, 所有方法请求方法都能用于请求体。**常见的场景是表单提交。
+
+#### 网络响应
+HTTP 请求到达服务器, 服务器进行对应的处理。最后把数据传给浏览器, 也就是返回网络响应。
+网络响应具有三个部分: `响应行`、`响应头`和`响应体`。
+首先是`响应行`。`响应行`也由三部分组成, `HTTP 协议版本`、`状态码` 和 `状态描述`。
+
+```js
+HTTP/1.1 200 OK
+```
+
+之后是`响应头`, 包含了服务器及其返回数据的一些信息, 服务器生成数据的时间、返回的数据类型以及对即将写入的 Cookie 信息等。
+最后是`响应体`, 包含了应该服务器端返回的数据。
+
+那么问题来了, 响应完成之后, TCP 连接就断开了吗?
+**答案是不一定**。需要对 `Connection` 字段进行判断。
+如果请求头或响应头中包含 `Connection: keep-alive`, 就表明建立了长连接。**在 HTTP1.1 中, `keep-alive` 是 `Connection` 字段的默认值。也就是说, HTTP1.1 是默认建立长连接的。**
+只有当请求头或响应头中包含 `Connection: close` 时, 才会关闭该连接。**在 HTTP1.0 中, `close` 是 `Connection` 字段的默认值。也就是说, HTTP1.0 是默认在请求后关闭连接的。**
+
+### 解析篇
+到这里, 我们已经通过网络拿到了目标文件。如果响应头中 `Content-Type` 的值是 `text/html`, 那么接下来就是浏览器的解析工作了。
+简单来说, 浏览器的解析可以分为三个步骤:
+1. 构建 DOM 树
+2. 计算样式, 生成 `CSS 规则树(CSS rule tree)`
+3. 生成`布局树(layout tree)`
+
+#### 构建 DOM 树
+首先要构建的是 DOM 树。**需要说明的是, 为了你能更好的理解这段内容, 强烈建议你阅读 [HTML 规范](https://html.spec.whatwg.org/multipage/parsing.html), 哪怕只阅读几个关键的部分也行。**以下是我觉得比较重要的几个部分:
+* [Overview of the parsing model](https://html.spec.whatwg.org/multipage/parsing.html#overview-of-the-parsing-model)
+* [Tokenization](https://html.spec.whatwg.org/multipage/parsing.html#tokenization)
+* [Tree construction](https://html.spec.whatwg.org/multipage/parsing.html#tree-construction)
+
+由于浏览器无法直接理解 HTML 字符串, 因此将这一系列的字节流转换为一种有意义并且方便操作的数据结构, 这种数据结构就是 DOM 树。**DOM 树本质上是一个以 `document` 为根节点的多叉树。**
+构建 DOM 树的整个过程可以用下图来表示。
+
+![构建 DOM 树](/images/interview-experence/24.svg)
+
+HTML 构建 DOM 树时使用的解析算法分为两步:
+1. `标记化(tokenizer)`, 对应`词法分析`的过程。
+2. `建树(tree construction)`, 对应`语法分析`的过程。
+
+值得注意的是, **上述两个过程在执行的时候并不是顺序执行, 而是不断交替执行的!**
+
+##### 标记化
+这个算法输入为 HTML 文本, 输出为 HTML 标记, 包括: `DOCTYPE`, `start tag`, `end tag`, `comment`, `character`, `end-of-file` 五种。因此称之为`标记生成器`。
+**算法的原理是有限状态机。**在当前状态下, 接收一个或多个字符, 就会更新到下一个状态。整个状态机有 80 种状态, 每种状态的行为不尽相同。哪怕是同一个状态, 具体行为也会受[插入模式(insertion mode)](https://html.spec.whatwg.org/multipage/parsing.html#insertion-mode)和[开放元素栈(stack of open elements)](https://html.spec.whatwg.org/multipage/parsing.html#stack-of-open-elements)的影响而略有不同。这里就不展开讨论了。
+**当一个标记被输出后, 它必须立即被建树算法所处理。**
+在建树阶段, 还可以通过添加额外的字符进入流中, 来影响标记化阶段。
+
+##### 建树
+之前提到过, DOM 树是一个以 `document` 为根节点的多叉树。因此`解析器(parser)`首先会创建一个 `document` 对象。`标记生成器`会把每个标记的信息发送给`建树器`。`建树器`接收到相应的标记时, 会创建对应的 DOM 对象。创建这个 DOM 对象后会做两件事情:
+1. 将创建好的 DOM 对象添加到 DOM 树中。
+2. 将对应标记压入开放元素栈(与闭合标签对应)中。
+
+在这个过程中, 当遇到某些会改变 DOM 结构的操作时, `建树器`会重新调用`标记生成器`, 来处理新出现的标签。引用一下原文吧:
+
+>The tree construction stage is reentrant, meaning that while the tree construction stage is handling one token, the tokenizer might be resumed, causing further tokens to be emitted and processed before the first token's processing is complete.
+
+#### 计算样式
+仅仅有 DOM 树是不够的, 我们还需要计算加载在 DOM 节点上的样式。这个过程分为三步:
+1. 汇总所有样式的来源, 格式化样式表。
+2. 将样式表中的属性值转化浏览器能够理解的值。
+3. 计算每个节点的具体样式。
+
+##### 格式化样式表
+一般来说, 样式的来源有三种: `<link> 标签`、`<style> 标签` 以及 内嵌样式。
+在计算样式之前, 浏览器会收集所有样式, 将其转化为一个结构化的对象, 即 `styleSheets`。这个对象可以在控制台通过 `document.styleSheets` 来查看。
+
+##### 转化标准值
+在书写 CSS 时, 有些属性值是不被渲染引擎理解的, 因此需要将其转化为标准值。如: `em` -> `px`、`red` -> `#ff0000`、`bold` -> `700` 等。
+
+##### 计算具体样式
+一个节点的具体样式主要由两个规则决定: **继承**和**层叠**。
+继承很好理解。每个子节点都会默认继承父节点的样式。如果父节点中没有对应样式, 则采用`浏览器默认样式(useragent style)`。
+层叠是指, 计算哪些样式应该生效, 哪些会被覆盖, 样式与样式之间的组合会如何影响最终的结果。这里不过多介绍。
+计算完的样式, 可以通过 `window.getComputedStyle()` 进行查看。此方法需要一个元素作为参数, 返回加在这个元素上的所有样式。
+
+#### 生成布局树
+到这里, 我们已经拥有了一棵完整的 DOM 树, 也有了每个节点的样式。接下来要做的, 就是计算元素所在的位置, 也就是要生成一棵`布局树(layout tree)`。
+布局树生成的大致工作如下:
+1. 遍历生成的 DOM 树节点, 并把他们添加到布局树中。
+2. 计算布局树节点的坐标位置。
+
+值得注意的是, **这棵布局树只包含可见元素, `<head> 标签`和设置了 `display: none` 的元素, 将不会被放入其中。**
+有人说首先会生成`渲染树(Render Tree)`, 其实这还是 16 年之前的事情, 现在 Chrome 团队已经做了大量的重构, 已经没有这一过程了。而布局树的信息已经非常完善, 完全拥有渲染树的功能。
+
+### 渲染篇
+现在我们已经具备了渲染前的一切条件, 可以往页面上绘制元素了。
+整个渲染过程分为以下一个步骤:
+1. 根据布局树, 生成`绘制记录(paint records)`
+2. 创建`图层树(layer tree)`
+3. 对图层进行`栅格化(raster)`, 并传入 GPU 中进行渲染
+4. 合成帧, 显示内容
+
+#### 生成绘制记录
+即使知道了不同元素的位置及样式信息, 我们还需要知道不同元素的绘制先后顺序才能正确绘制出整个页面。
+浏览器主线程会遍历布局树以创建绘制记录。
+**绘制记录可以看做是记录各元素绘制先后顺序的笔记。**
+
+#### 创建图层树
+首先我们要明白什么是`图层(layer)`以及图层的作用。
+浏览器会遍历布局树, 将符合一定要求的节点提升为一个单独的图层, 称为`合成层(Compositing Layers)`, 有别于普通文档流内的**普通图层**。在渲染时, 各个图层之间都是相对独立的。在最终渲染时, 再通过`合成器线程(compositor thread)`将不同图层组合在一起, 形成我们看到的页面。
+首先, 普通文档流内可以理解为一个**复合图层**(这里称为**默认复合层**, 里面不管添加多少元素, 其实都是在同一个复合图层中)。
+**需要注意的是, 脱离文档流并不代表会为该元素创建新的图层。**以 `absolute` 布局(`fixed` 也一样)为例, 虽然可以脱离普通文档流, 但它仍然属于默认复合层。
+其次, 某些特殊的渲染层会被认为是`合成层(Compositing Layers)`, 合成层拥有单独的图层。其他不是合成层的图层, 则和其第一个拥有单独图层的父层共用同一个图层。
+那么使用合成层有哪些优点呢? 主要有下面三条:
+1. 合成层的在绘制时, 会交由 GPU 合成, 比 CPU 处理要快。
+2. 当需要重绘时, 只需要重绘当前层本身, 不会影响到其他图层。
+3. 对于 `transform` 和 `opacity` 效果, 不会触发重绘。
+
+在这里我们只介绍了最简单的图层的概念和优点, 如果想深入了解的话, 可以看看这两篇文章:
+* [浏览器渲染流程&Composite(渲染层合并)简单总结](https://segmentfault.com/a/1190000014520786)
+* [无线性能优化: Composite](https://fed.taobao.org/blog/2016/04/26/performance-composite/)
+
+#### 栅格化
+有的时候, 页面很大, 而我们的视口很小。这个时候, 盲目的去渲染整个页面显然是得不偿失的, 因为有很多地方根本就不会显示在页面上!
+为了解决这个问题, 我们可以将页面根据图层划分为小块, 并优先渲染靠近视口的部分, 以获得更好的首屏性能。这个过程称为`栅格化(raster)`。
+在栅格化之后, 会将小块传入 GPU 中进行渲染。整个栅格化的过程涉及到浏览器的两个线程, 一个是`合成器线程(compositor thread)`, 一个是`栅格化线程(raster thread)`。
+合成器线程会优先选定视口附近的图块, 将其交给栅格化进程进行栅格化。栅格化进程会将图块栅格化后的结果传入 GPU, 并存放在 GPU 的显存中。
+
+另外值得一提的是, 由于图块数据要进入 GPU 内存, 而浏览器内存上传 GPU 内存的速度比较慢, 即使是绘制一部分图块, 也可能会耗费大量时间。
+针对这个问题, Chrome 采用了一个策略: 在首次合成图块时只采用一个低分辨率的图像, 这样首屏展示的时候只是展示出低分辨率的图像。之后继续进行合成操作, 当正常的图块内容绘制完毕后, 会将当前低分辨率的图块内容替换。这也是 Chrome 底层优化首屏加载速度的一个手段。
+
+#### 合成帧
+在栅格化结束后, `合成器线程` 会生成一个绘制页面的指令, 即`Draw Quads`, 指定需要将哪部分页面绘制出来, 并将这个命令发送给`浏览器进程(browser thread)`。
+浏览器进程根据这个指令, 把页面内容绘制到内存, 也就是生成了页面, 然后把这部分内存发送给显卡。为什么发给显卡呢? 这里就有必要聊一聊显示器显示图像的原理了。
+
+一般来说, 显卡有两个缓冲区, 分别称为`前缓冲区`和`后缓冲区`。在我们更新页面时, 每次更新的图像都来自显卡的前缓冲区。显卡接收到浏览器进程传来的页面后, 会合成相应的图像, 并将图像保存到后缓冲区, 然后由系统自动将前缓冲区和后缓冲区对换位置, 如此循环, 更新图像。
+看到这里你也就是明白, 当某个动画大量占用内存的时候, 浏览器生成图像的时候会变慢, 图像传送给显卡就会不及时, 而显示器还是以 60 fps 的频率刷新, 因此会出现卡顿, 也就是明显的掉帧现象。
+
+### 总结
+到这里, 整个过程就全部结束了。用三张图来总结一下吧:
+
+![选择器](/images/interview-experence/25.jpg)
+
+![选择器](/images/interview-experence/26.jpg)
+
+![选择器](/images/interview-experence/27.jpg)
+
+
+## 浏览器本地存储的方式及优劣
+浏览器本地缓存主要分为 `Cookie`、`WebStorage` 和 `IndexedDB`, 其中 `WebStorage` 又分为 `localStorage` 和 `sessionStorage`。
+
+### Cookie
+`Cookie` 最早被设计出来的目的, 是用于帮助 HTTP 进行状态管理的。
+`Cookie` 的本质上就是浏览器里面存储的一个很小的文本文件, 内部以键值对的方式来存储。浏览器向某个域名发送请求时, 会自动带上当前域名下的 `Cookie`。服务器拿到 `Cookie` 之后, 便可以进行一系列状态解析工作。
+但 `Cookie` 也有缺陷:
+1. `Cookie` 的容量很小, 单个域名的存储上限仅有 4KB。
+2. 在发送请求时, 浏览器会把当前域名下所有的 `Cookie` 都发送出去, 不管这个请求需不需要。当挂载在某个域名下的 `Cookie` 很多时, 会造成性能上的浪费。
+3. `Cookie` 易被篡改。没有设置 `HttpOnly` 的 `Cookie` 可以被 JavaScript 访问。且在请求传输的过程中, 容易非法用户被截获并篡改。
+
+### localStorage
+`localStorage` 有一点和 `Cookie` 一样, 那就是都是按照域名存储的, 只要进入对应域名, 就能访问到该域名下的 `localStorage`。除此之外, `localStorage` 还有以下特点:
+1. 容量大。单个域名存储的上限达到了 5M。
+2. 只存在于客户端, 不参与与服务器的通信。
+3. 操作方便。`localStorage` 暴露在全局下, 通过其下面挂载的 `setItem` 和 `getItem` 等方法, 可以很方便的进行操作。
+4. 与 `Cookie` 不同, **`localStorage` 没有过期时间。**除非手动清除缓存, 否则会一直保留。
+5. **`localStorage` 中存储的值都是字符串。**如果要存储对象的话, 需要调用 `JSON.stringify` 方法将对象转化为字符串后, 再进行存储。
+
+### sessionStorage
+`sessionStorage` 与 `localStorage` 大致相同。二者都具有以下特点:
+1. 容量上限均为 5M。
+2. 只存在于客户端, 不与服务器发生交互。
+3. `sessionStorage` 暴露在全局之下, 操作方法与 `localStorage` 一致。
+
+二者的不同点在于: **`sessionStorage` 只是会话级别的存储, 关闭页面之后, `sessionStorage` 会自动清除。**
+
+### IndexedDB
+`IndexedDB` 是运行在浏览器中的非关系型数据库。
+由于其本质上是数据库, 因此不存在存储上限。
+关于 `IndexedDB`, 有如下特点需要注意:
+1. `IndexedDB` 遵循同源策略。
+2. `IndexedDB` 的 API 基本上都是异步的。
+3. 在 `IndexedDB` 内部, 使用键值对存储数据。
+
+`IndexedDB` 可以让开发者不考虑网络可用性, 创建具有丰富查询能力的可离线 Web 应用程序, 对于存储大量数据的应用程序和不需要持续网络连接的应用程序很有用。
+更多信息请参考[MDN: IndexedDB](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB)。
+
+## 浏览器的显示优化
+todo
+
+## IndexedDB
+todo
+
+## Web Worker
+todo
+
+## Service Worker
+Service workers 本质上充当Web应用程序与浏览器之间的代理服务器, 也可以在网络可用时作为浏览器和网络间的代理。它们旨在(除其他之外)使得能够创建有效的离线体验, 拦截网络请求并基于网络是否可用以及更新的资源是否驻留在服务器上来采取适当的动作。他们还允许访问推送通知和后台同步API。
+简单来说, ServiceWorker 允许应用完全控制浏览器的网络行为, 修改网络请求。你可以完全控制应用在特定情形(最常见的情形是网络不可用)下的表现。可以通过ServiceWorker创建离线应用。
+Service worker运行在worker上下文, 因此它不能访问DOM。相对于驱动应用的主JavaScript线程, 它运行在其他线程中, 所以不会造成阻塞。它设计为完全异步, 同步API(如XHR和localStorage)不能在service worker中使用。
+出于安全考量, Service workers只能由HTTPS承载, 毕竟修改网络请求的能力暴露给中间人攻击会非常危险。在Firefox浏览器的用户隐私模式, Service Worker不可用。
+参考链接
+https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
+https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
+todo
+
+## 参考资料
+* [(1.6w字)浏览器灵魂之问, 请问你能接得住几个?](https://juejin.im/post/5df5bcea6fb9a016091def69#heading-8)
+* [HTTP/2 push is tougher than I thought](https://jakearchibald.com/2017/h2-push-tougher-than-i-thought/)
+* [HTML 规范](https://html.spec.whatwg.org/multipage/parsing.html)
+* [从 Chrome 源码看浏览器如何 layout 布局](https://www.rrfed.com/2017/02/26/chrome-layout/)
+* [史上最全! 图解浏览器的工作原理](https://www.infoq.cn/article/cs9-wzqlnr5h05hhdo1b)
+* [浏览器渲染流程&Composite(渲染层合并)简单总结](https://segmentfault.com/a/1190000014520786)
+* [无线性能优化: Composite](https://fed.taobao.org/blog/2016/04/26/performance-composite/)
+* [浏览器渲染过程与性能优化](https://juejin.im/post/59d489156fb9a00a571d6509#heading-3)
+* [MDN: IndexedDB](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB)
+
+# git
+## git merge 与 git rebase 的区别
+## git pull 和 git fetch 的区别
+todo
 
 # Node
 
 # 其他
 ## Linux 操作系统相关
 todo 软连接
-
-## 前端性能优化
-todo
-参考资料 https://www.cnblogs.com/xianyulaodi/p/5755079.html
 
 ## 前后端渲染的优缺点
 首先要明确三个概念, 那就是`后端渲染`, `前端渲染`和`同构渲染`。
@@ -2840,17 +4199,6 @@ todo
 2. 实现函数, 输入给定的 k 和 n, 给出 x ^ k = n 中的 x 值( k, n 均大于 0)。
 todo
 
-# Java
-1. 使用静态属性必须以类名做前缀?
-2. 线性表中利用( )存储方式最省时间? 
-3. 在有n个结点的二叉链表中,值为非空的链域的个数为__________。
-4. Java语言中,不考虑反射机制,一个子类显式调用父类的构造器必须用__________关键字。
-5. 抽象类和接口的区别?
-6. 抽象、继承、多态?
-
-ios oc的事件、消息机制?
-ios 耗电优化?
-
 # typescript
 读文档
 
@@ -2859,7 +4207,7 @@ ios 耗电优化?
 # Flutter
 
 # 小程序相关
-todo 这些东西在航旅纵横二面前看完
+todo
 权限管理
 小程序发布
 小程序包压缩策略

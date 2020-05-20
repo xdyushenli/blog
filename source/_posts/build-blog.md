@@ -77,3 +77,25 @@ heading_index:
   global_prefix: ""
   global_suffix: ". "
 ```
+
+8. 如何在文章内添加指向当前文章某些章节的链接？
+和链接的语法一样，只不过在链接地址部分填入`#章节标题`即可。**这里的 # 个数不需要与标题前面的 # 个数保持一致，只需要一个就够了。**
+
+9. Hexo 中，表格默认设置每列等分，很不美观，如何改变列宽？
+直接在 `.md` 文件中添加样式即可。
+```html
+<style>
+table th:nth-of-type(1){
+width: 20%;
+}
+table th:nth-of-type(2){
+width: 20%
+;
+}
+table th:nth-of-type(3){
+width: 60%;
+}
+</style>
+```
+如上我们规定，第一二列宽度为 20%，第三列为 60%。
+具体效果见[Hexo 中表格宽度调整](http://idukelu.com/Hexo-%E4%B8%AD%E8%A1%A8%E6%A0%BC%E5%AE%BD%E5%BA%A6%E8%B0%83%E6%95%B4/)

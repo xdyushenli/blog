@@ -1,7 +1,7 @@
 ---
 title: React贡献手册
 date: 2019-12-13 16:00:37
-tags: [ React ]
+tags: [ 翻译计划, react ]
 ---
 本文为对 React 贡献手册的提炼, 便于快速回顾。
 # 如何参与
