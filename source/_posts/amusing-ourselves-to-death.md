@@ -40,4 +40,4 @@ tags: [ 读书笔记 ]
 在社交媒体时代, 大众的话语被进一步割裂, 严肃的讨论语境几乎不复存在, 人获取到的信息越来越碎片化。人对于信息的获取是会上瘾的, 这点我深有体会。在上大学的过程中, 我发现自己越来越难以沉下心去阅读。这并不是好的趋势, 在之后的工作学习中必须强迫自己去阅读, 慢慢地改变自己。
 
 # 笔记
-* [《娱乐至死》 尼尔·波兹曼]()
+* [《娱乐至死》 尼尔·波兹曼](https://github.com/xdyushenli/blog/blob/master/source/files/amusing-ourselves-to-death/amusing-ourselves-to-death.md)
