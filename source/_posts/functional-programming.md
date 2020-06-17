@@ -1,9 +1,13 @@
 ---
-title: 编程范式：函数式编程
+title: 初探函数式编程
 date: 2020-06-12 09:42:15
 tags: [ javascript, ramda, 函数式编程 ]
 ---
-# 
+# 什么是函数式编程？
+
+# 函数式编程的基本概念
+
+# 为什么推荐在 React 中使用函数式编程？
 
 # 推崇的编程风格
 推崇函数式编程，核心理念是数据不变性以及函数无副作用。
@@ -200,8 +204,32 @@ todo
 
 在函数式编程的流水线类比中，functor 可以理解为流水线上的某个加工车间。
 
+定义了 map 函数，且只能通过 map 函数来操作数据的对象称为 functor.
+
 todo
 引申：是否可以认为函数式编程中的函数都属于 functor 呢？
+
+# lenses 详解
+todo
+lens 提供了一个对象的引用。
+over：原地修改
+set： 修改
+view：访问
+over、set 函数的作用？
+* [函数式引用 lenses](https://kms.netease.com/article/4748)
+
+todo
+lens源码实现
+
+# transducer
+参数列表
+1. 每个数组元素上要执行的操作
+2. reduce 方法接受的函数，有两个参数，分别为累加值和当前值（第一个参数调用的结果）
+3. 初值
+4. 目标数组
+
+* [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
+[a good introductory article](http://simplectic.com/blog/2015/ramda-transducers-logs/
 
 # 参考资料
 * [Why Ramda?](https://fr.umio.us/why-ramda/)
@@ -209,6 +237,8 @@ todo
 * [Thinking in Ramda](https://randycoulman.com/blog/categories/thinking-in-ramda/)
 * [简明 JavaScript 函数式编程——入门篇](https://juejin.im/post/5d70e25de51d453c11684cc4)
 * [函数式编程进阶：杰克船长的黑珍珠号](https://juejin.im/post/5e09554bf265da33b5074d7f)
+* [函数式引用 lenses](https://kms.netease.com/article/4748)
+* [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
 
 # 任务
 todo
