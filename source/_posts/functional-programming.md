@@ -3,36 +3,29 @@ title: 初探函数式编程
 date: 2020-06-12 09:42:15
 tags: [ javascript, ramda, 函数式编程 ]
 ---
+# 前言
+这是一篇介绍纯函数以及函数式编程框架 Ramda 的博客。
+
 # 什么是函数式编程？
+JavaScript 不是一门函数式编程的语言，但是能够很好的支持函数式编程范式。因为函数在 JavaScript 中是作为`一等公民（First-class citizen）`的。
 
-# 函数式编程的基本概念
+# 什么是“第一公民”？
+所谓的**“将函数作为第一公民”**是指函数能够做到以下几点：
+* 被赋值给变量。
+* 能够作为函数的参数。
+* 能够作为函数的返回值。
 
-# 为什么推荐在 React 中使用函数式编程？
+在 JavaScript 中，函数本质上不过是对象而已！
 
-# 推崇的编程风格
-推崇函数式编程，核心理念是数据不变性以及函数无副作用。
-推崇通过构建函数序列来完成工作。每个函数对数据进行变换，并将结果传递给下一个函数。这种范式被称为`pipeline`。
-> The new function takes the same number of arguments as the first function it is given. It then “pipes” those arguments through each function in the list. It applies the first function to the arguments, passes its result to the second function and so on. The result of the last function is the result of the pipe call.
+# 函数式编程的中心思想？
+## 拆分 + 组合
+todo
 
-> Note that all of the functions after the first must only take a single argument.
+## 数据不可变性
+todo
 
-> By combining several functions in specific ways, we can start to write more powerful functions.
-
-可以通过提供的高阶函数 API 来对函数进行复用。
-
-函数式编程中，函数就是一切。函数可以是操作本身，也可以是被操作的数据。
-
-# 函数式编程
-函数式编程着眼的**函数**，而不是**过程**。它强调如何通过函数的组合变换来解决问题，而不是我通过写什么语句去解决问题。
-
-有众多单一目的的小程序，一个小程序只实现一个功能，多个程序组合完成复杂任务。
-
-# Ramda API 的特点
-所有对数据的操作——包括加减、修改数组元素等——都需要通过内部的 API 来操作。
-
-在数据不可变的思想有点类似于 ImmutableJS，都需要通过框架提供的 API 来对数据进行操作。
-
-# 为什么数据的 Immutability 对 React 很重要？
+# 所以这一切和 React 有什么关系呢？
+别急，下面我们会来解释**为什么推荐在 React 中使用函数式编程**以及**为什么数据的 Immutability 对 React 很重要。**
 在 React 中，当上层组件的数据变化并重新渲染时，即使在下层组件的数据没有变化的情况下，也会导致下层组件跟着刷新。为了限制每次数据变化带来的更新范围，React 推出了 shouldComponentUpdate 和 getDrivedStateFromProps。在这两个生命周期中，用户可以通过比较 state 和 props 来确认是否更新某个组件。
 
 让我们暂停并思考一下，上述提议看起来很美好，但有一个致命的缺陷，那就是我们使用的是 JavaScript。在 JavaScript 中，传递复杂对象的方式是引用传递，也就是说我们不能通过比较 state 更改前后是否相等来判断 state 是否发生了变化，因为它们本质上都指向同一个对象！
@@ -69,6 +62,56 @@ prevState === nextState;
 
 在 React 中使用这种编程范式时，需要根据数据量来具体划分。
 当数据量较小时，可以采用直接深复制的方法实现数据不可变。当数据量比较大时，可以使用 ImmutableJS 等框架来实现这一范式。
+
+# 函数式编程的重要概念
+纯函数、curry、partial、functor、transducers、《入门》中提到的几个 functor
+
+# Ramda API 的划分
+* 组合类 API：pipe、compose 等。
+* partial API：curry、partial、partialRight 等。
+* 流程控制类：ifElse 等。
+* 逻辑控制类：not、or、and、anyPass、allPass 等。
+* 操作对象的 API：add & update property: assoc & assocPath
+
+delete property: dissoc & dissocPath & omit
+
+transform property: evolve
+
+merge object: merge
+等。
+* 操作数组的 API：add elements: insert, append, prepend.
+
+update elements: update, adjust
+
+merge array: concat
+
+remove elements: remove, without, drop, dropLast
+等。
+* 辅助类：curry、partial、partialRight、lens、tap 等。
+
+# 推崇的编程风格
+推崇函数式编程，核心理念是数据不变性以及函数无副作用。
+推崇通过构建函数序列来完成工作。每个函数对数据进行变换，并将结果传递给下一个函数。这种范式被称为`pipeline`。
+> The new function takes the same number of arguments as the first function it is given. It then “pipes” those arguments through each function in the list. It applies the first function to the arguments, passes its result to the second function and so on. The result of the last function is the result of the pipe call.
+
+> Note that all of the functions after the first must only take a single argument.
+
+> By combining several functions in specific ways, we can start to write more powerful functions.
+
+可以通过提供的高阶函数 API 来对函数进行复用。
+
+函数式编程中，函数就是一切。函数可以是操作本身，也可以是被操作的数据。
+
+# 函数式编程
+todo 命令式编程？
+函数式编程着眼的**函数**，而不是**过程**。它强调如何通过函数的组合变换来解决问题，而不是通过写什么语句去解决问题。
+
+有众多单一目的的小程序，一个小程序只实现一个功能，多个程序组合完成复杂任务。
+
+# Ramda API 的特点
+所有对数据的操作——包括加减、修改数组元素等——都需要通过内部的 API 来操作。
+
+在数据不可变的思想有点类似于 ImmutableJS，都需要通过框架提供的 API 来对数据进行操作。
 
 # 为什么我们需要 curry？
 curry 的意思是将一个多参函数，转换为一个依次调用的单参函数。
@@ -237,8 +280,12 @@ lens源码实现
 * [Thinking in Ramda](https://randycoulman.com/blog/categories/thinking-in-ramda/)
 * [简明 JavaScript 函数式编程——入门篇](https://juejin.im/post/5d70e25de51d453c11684cc4)
 * [函数式编程进阶：杰克船长的黑珍珠号](https://juejin.im/post/5e09554bf265da33b5074d7f)
+* [第一类对象](https://zh.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E9%A1%9E%E7%89%A9%E4%BB%B6)
+
+未阅读
 * [函数式引用 lenses](https://kms.netease.com/article/4748)
 * [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
+* [Transducers: Supercharge your functional JavaScript](https://www.jeremydaly.com/transducers-supercharge-functional-javascript/)
 
 # 任务
 todo
