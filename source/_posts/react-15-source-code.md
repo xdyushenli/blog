@@ -136,9 +136,11 @@ todo
 * [Using a function in setState instead of an object](https://medium.com/@wisecobbler/using-a-function-in-setstate-instead-of-an-object-1f5cfd6e55d1)
 * [JavaScript Pseudoclassical Subclasses](https://yctercero.github.io/javascript-subclasses/)
 
+**上面的都是阅读笔记，可以不用看！！**
+
 # 从 ReactDOM.render 开始首次更新的流程
 ```js
-// src/renderers/dom/ReactMount.js
+// src/renderers/dom/ReactDOM.js
 var ReactDOM = {
     // ...
     render: ReactMount.render,
@@ -148,6 +150,7 @@ var ReactDOM = {
 接下来看看 ReactMount 是何方神圣。
 ReactMount 下挂载有很多方法：
 ```js
+// src/renderers/dom/client/ReactMount.js
 var ReactMount = {
     TopLevelWrapper,
     _instancesByReactRootID,
@@ -161,8 +164,11 @@ var ReactMount = {
     _mountImageIntoNode()
 }
 ```
+
 其中，`render` 方法长这样：
+
 ```js
+// src/renderers/dom/client/ReactMount.js
 /**
 * Renders a React component into the DOM in the supplied `container`.
 * See https://facebook.github.io/react/docs/top-level-api.html#reactdom.render
@@ -268,7 +274,7 @@ _renderNewRootComponent: function(
 
     // 见 batchedUpdates 解析
     ReactUpdates.batchedUpdates(
-        // 见下
+        // 见 batchedMountComponentIntoNode 解析
         batchedMountComponentIntoNode,
         // 复合组件 wrapper 实例
         componentInstance,
@@ -284,22 +290,6 @@ _renderNewRootComponent: function(
     instancesByReactRootID[wrapperID] = componentInstance;
 
     return componentInstance;
-}
-
-// todo
-/**
- * Batched mount.
- *
- * @param {ReactComponent} componentInstance The instance to mount.
- * @param {DOMElement} container DOM element to mount into.
- * @param {boolean} shouldReuseMarkup If true, do not insert markup
- */
-function batchedMountComponentIntoNode(componentInstance, container, shouldReuseMarkup, context) {
-    var transaction = ReactUpdates.ReactReconcileTransaction.getPooled(!shouldReuseMarkup && ReactDOMFeatureFlags.useCreateElement);
-
-    transaction.perform(mountComponentIntoNode, null, componentInstance, container, transaction, shouldReuseMarkup, context);
-    
-    ReactUpdates.ReactReconcileTransaction.release(transaction);
 }
 ```
 
@@ -406,8 +396,10 @@ function batchedUpdates(callback, a, b, c, d, e) {
 // 别问我为啥 batchingStrategy === ReactDefaultBatchingStrategy, 问就是 magic
 // 应该也是 assign 了一下吧
 batchingStrategy = ReactDefaultBatchingStrategy
+```
 
-// ReactDefaultBatchingStrategy.js
+```js
+// src/renderers/shared/stack/reconciler/ReactDefaultBatchingStrategy.js
 var ReactDefaultBatchingStrategy = {
     isBatchingUpdates: false,
 
@@ -424,7 +416,11 @@ var ReactDefaultBatchingStrategy = {
         }
     },
 };
+```
 
+好了, 让我们来看看 `transaction` 是什么吧。
+
+```js
 var transaction = new ReactDefaultBatchingStrategyTransaction();
 
 function ReactDefaultBatchingStrategyTransaction() {
@@ -432,6 +428,7 @@ function ReactDefaultBatchingStrategyTransaction() {
 }
 
 // Transaction 的有关内容见 Transaction 解析
+// 可以看到, ReactDefaultBatchingStrategyTransaction 是 Transaction 的子类
 _assign(ReactDefaultBatchingStrategyTransaction.prototype, Transaction, {
     getTransactionWrappers: function () {
         return TRANSACTION_WRAPPERS;
@@ -439,12 +436,344 @@ _assign(ReactDefaultBatchingStrategyTransaction.prototype, Transaction, {
 });
 ```
 
+问题来了, `TRANSACTION_WRAPPERS` 是什么?
+
+```js
+// src/renderers/shared/stack/reconciler/ReactDefaultBatchingStrategy.js
+var TRANSACTION_WRAPPERS = [FLUSH_BATCHED_UPDATES, RESET_BATCHED_UPDATES];
+
+var FLUSH_BATCHED_UPDATES = {
+    initialize: emptyFunction,
+    close: ReactUpdates.flushBatchedUpdates.bind(ReactUpdates),
+};
+
+var RESET_BATCHED_UPDATES = {
+    initialize: emptyFunction,
+    close: function() {
+        ReactDefaultBatchingStrategy.isBatchingUpdates = false;
+    },
+};
+```
+
+通过 Transaction 的定义代码可知, 前置函数都是 `emptyFunction`, 后置函数相当于:
+
+```js
+function () {
+    ReactUpdates.flushBatchedUpdates.bind(ReactUpdates);
+    ReactDefaultBatchingStrategy.isBatchingUpdates = false;
+}
+```
+
+那么, 前面的 `ReactDefaultBatchingStrategy.batchedUpdates` 调用相当于执行了 `ReactUpdates.flushBatchedUpdates`, 那么 `ReactUpdates.flushBatchedUpdates` 又做了什么呢?
+
+```js
+var flushBatchedUpdates = function() {
+    // ReactUpdatesFlushTransaction's wrappers will clear the dirtyComponents
+    // array and perform any updates enqueued by mount-ready handlers (i.e.,
+    // componentDidUpdate) but we need to check here too in order to catch
+    // updates enqueued by setState callbacks and asap calls.
+    // dirtyComponents 代表待更新的节点
+    // todo asapEnqueued 代表调用 forceUpdate 产生的更新?
+    while (dirtyComponents.length || asapEnqueued) {
+        if (dirtyComponents.length) {
+            var transaction = ReactUpdatesFlushTransaction.getPooled();
+            transaction.perform(runBatchedUpdates, null, transaction);
+            ReactUpdatesFlushTransaction.release(transaction);
+        }
+
+        if (asapEnqueued) {
+            asapEnqueued = false;
+            var queue = asapCallbackQueue;
+            asapCallbackQueue = CallbackQueue.getPooled();
+            queue.notifyAll();
+            CallbackQueue.release(queue);
+        }
+    }
+};
+```
+
+todo 其实从本节开始已经不怎么按照方法分 p 了...将就看吧
+
 # Transaction 解析
 `transaction` 中文翻译为 `事务`。
-React 中的 `Transaction` 类用于给目标函数添加一系列的前置和后置函数，对目标函数进行功能增强或者代码环境保护。
+React 中的 `Transaction` 类用于给目标函数添加一系列的前置和后置函数, 对目标函数进行功能增强或者代码环境保护。
 
-https://segmentfault.com/a/1190000021303172#item-2
+其实这篇[文章](https://segmentfault.com/a/1190000021303172)讲的已经很明白了, 有啥不懂的可以直接看这个。
+
+可以将一个更新任务视为一个 Transaction, 为了实现 componentWillUpdate 以及 componentDidUpdate, 通过 Transaction 指定的方法为更新任务添加前置或后置函数。 
+
 ```js
-// Transaction.js
-todo
+// src/renderers/shared/utils/Transaction.js
+/*
+ * Copyright 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @providesModule Transaction
+ * @flow
+ */
+
+'use strict';
+
+var invariant = require('invariant');
+
+var OBSERVED_ERROR = {};
+
+/**
+ * `Transaction` creates a black box that is able to wrap any method such that
+ * certain invariants are maintained before and after the method is invoked
+ * (Even if an exception is thrown while invoking the wrapped method). Whoever
+ * instantiates a transaction can provide enforcers of the invariants at
+ * creation time. The `Transaction` class itself will supply one additional
+ * automatic invariant for you - the invariant that any transaction instance
+ * should not be run while it is already being run. You would typically create a
+ * single instance of a `Transaction` for reuse multiple times, that potentially
+ * is used to wrap several different methods. Wrappers are extremely simple -
+ * they only require implementing two methods.
+ *
+ * <pre>
+ *                       wrappers (injected at creation time)
+ *                                      +        +
+ *                                      |        |
+ *                    +-----------------|--------|--------------+
+ *                    |                 v        |              |
+ *                    |      +---------------+   |              |
+ *                    |   +--|    wrapper1   |---|----+         |
+ *                    |   |  +---------------+   v    |         |
+ *                    |   |          +-------------+  |         |
+ *                    |   |     +----|   wrapper2  |--------+   |
+ *                    |   |     |    +-------------+  |     |   |
+ *                    |   |     |                     |     |   |
+ *                    |   v     v                     v     v   | wrapper
+ *                    | +---+ +---+   +---------+   +---+ +---+ | invariants
+ * perform(anyMethod) | |   | |   |   |         |   |   | |   | | maintained
+ * +----------------->|-|---|-|---|-->|anyMethod|---|---|-|---|-|-------->
+ *                    | |   | |   |   |         |   |   | |   | |
+ *                    | |   | |   |   |         |   |   | |   | |
+ *                    | |   | |   |   |         |   |   | |   | |
+ *                    | +---+ +---+   +---------+   +---+ +---+ |
+ *                    |  initialize                    close    |
+ *                    +-----------------------------------------+
+ * </pre>
+ *
+ * Use cases:
+ * - Preserving the input selection ranges before/after reconciliation.
+ *   Restoring selection even in the event of an unexpected error.
+ * - Deactivating events while rearranging the DOM, preventing blurs/focuses,
+ *   while guaranteeing that afterwards, the event system is reactivated.
+ * - Flushing a queue of collected DOM mutations to the main UI thread after a
+ *   reconciliation takes place in a worker thread.
+ * - Invoking any collected `componentDidUpdate` callbacks after rendering new
+ *   content.
+ * - (Future use case): Wrapping particular flushes of the `ReactWorker` queue
+ *   to preserve the `scrollTop` (an automatic scroll aware DOM).
+ * - (Future use case): Layout calculations before and after DOM updates.
+ *
+ * Transactional plugin API:
+ * - A module that has an `initialize` method that returns any precomputation.
+ * - and a `close` method that accepts the precomputation. `close` is invoked
+ *   when the wrapped process is completed, or has failed.
+ *
+ * @param {Array<TransactionalWrapper>} transactionWrapper Wrapper modules
+ * that implement `initialize` and `close`.
+ * @return {Transaction} Single transaction for reuse in thread.
+ *
+ * @class Transaction
+ */
+var TransactionImpl = {
+    /**
+     * Sets up this instance so that it is prepared for collecting metrics. Does
+     * so such that this setup method may be used on an instance that is already
+     * initialized, in a way that does not consume additional memory upon reuse.
+     * That can be useful if you decide to make your subclass of this mixin a
+     * "PooledClass".
+     */
+    // 初始化或重新初始化
+    reinitializeTransaction: function (): void {
+        // getTransactionWrappers 是通过外部注入的一个函数, 通过这个函数可以自定义返回的 Transaction Wrapper
+        // Transaction Wrapper 应该是一个数组, 里面存储的是当前事务的前置函数和后置函数
+        this.transactionWrappers = this.getTransactionWrappers();
+
+        // todo wrapper 函数的初始数据?
+        if (this.wrapperInitData) {
+            this.wrapperInitData.length = 0;
+        } else {
+            this.wrapperInitData = [];
+        }
+        // react 不允许调用正在进行的 Transaction
+        // 当事务的前置函数或后置函数在执行时, 这个标志位应该变为 true?
+        this._isInTransaction = false;
+    },
+
+    _isInTransaction: false,
+
+    /**
+     * @abstract
+     * @return {Array<TransactionWrapper>} Array of transaction wrappers.
+     */
+    // 给事务添加 wrappers 的方法, 通过外部指定, 返回值是一个数组, 数组中的每个元素都为对象, 每个对象都可选地包含(前置和后置函数可以为空) initialize 和 close 方法
+    getTransactionWrappers: null,
+
+    isInTransaction: function (): boolean {
+        return !!this._isInTransaction;
+    },
+
+    /**
+     * Executes the function within a safety window. Use this for the top level
+     * methods that result in large amounts of computation/mutations that would
+     * need to be safety checked. The optional arguments helps prevent the need
+     * to bind in many cases.
+     *
+     * @param {function} method Member of scope to call.
+     * @param {Object} scope Scope to invoke from.
+     * @param {Object?=} a Argument to pass to the method.
+     * @param {Object?=} b Argument to pass to the method.
+     * @param {Object?=} c Argument to pass to the method.
+     * @param {Object?=} d Argument to pass to the method.
+     * @param {Object?=} e Argument to pass to the method.
+     * @param {Object?=} f Argument to pass to the method.
+     *
+     * @return {*} Return value from `method`.
+     */
+    // 这里就是我们在初次渲染时执行的方法了
+    // 用于对目标函数完成包裹动作, 并执行相应的前置或后置函数
+    // 可以看到 perform 接受三种参数: 第一个参数为目标函数, 第二个参数为目标函数调用的作用域, 第三个及之后的参数为需要向目标函数中传递的参数
+    perform: function <
+        A, B, C, D, E, F, G,
+        T: (a: A, b: B, c: C, d: D, e: E, f: F) => G // eslint-disable-line space-before-function-paren
+    > (
+        method: T, scope: any,
+        a: A, b: B, c: C, d: D, e: E, f: F,
+    ): G {
+        var errorThrown;
+        var ret;
+        try {
+            this._isInTransaction = true;
+            // Catching errors makes debugging more difficult, so we start with
+            // errorThrown set to true before setting it to false after calling
+            // close -- if it's still set to true in the finally block, it means
+            // one of these calls threw.
+            errorThrown = true;
+            // 执行所有前置函数
+            this.initializeAll(0);
+            ret = method.call(scope, a, b, c, d, e, f);
+            errorThrown = false;
+        } finally {
+            // closeAll 用于执行所有后置函数
+            try {
+                if (errorThrown) {
+                    // If `method` throws, prefer to show that stack trace over any thrown
+                    // by invoking `closeAll`.
+                    try {
+                        this.closeAll(0);
+                    } catch (err) {
+                    }
+                } else {
+                    // Since `method` didn't throw, we don't want to silence the exception
+                    // here.
+                    this.closeAll(0);
+                }
+            } finally {
+                this._isInTransaction = false;
+            }
+        }
+        return ret;
+    },
+
+    initializeAll: function(startIndex: number): void {
+        // Transaction Wrapper 数组
+        var transactionWrappers = this.transactionWrappers;
+        // todo 没看懂哎
+        for (var i = startIndex; i < transactionWrappers.length; i++) {
+            var wrapper = transactionWrappers[i];
+            try {
+                // Catching errors makes debugging more difficult, so we start with the
+                // OBSERVED_ERROR state before overwriting it with the real return value
+                // of initialize -- if it's still set to OBSERVED_ERROR in the finally
+                // block, it means wrapper.initialize threw.
+                // OBSERVED_ERROR 是空白对象
+                this.wrapperInitData[i] = OBSERVED_ERROR;
+                this.wrapperInitData[i] = wrapper.initialize ?
+                    wrapper.initialize.call(this) :
+                    null;
+            } finally {
+                if (this.wrapperInitData[i] === OBSERVED_ERROR) {
+                    // The initializer for wrapper i threw an error; initialize the
+                    // remaining wrappers but silence any exceptions from them to ensure
+                    // that the first error is the one to bubble up.
+                    try {
+                        this.initializeAll(i + 1);
+                    } catch (err) {
+                    }
+                }
+            }
+        }
+    },
+
+    /**
+     * Invokes each of `this.transactionWrappers.close[i]` functions, passing into
+     * them the respective return values of `this.transactionWrappers.init[i]`
+     * (`close`rs that correspond to initializers that failed will not be
+     * invoked).
+     */
+    closeAll: function(startIndex: number): void {
+        invariant(
+            this.isInTransaction(),
+            'Transaction.closeAll(): Cannot close transaction when none are open.'
+        );
+        var transactionWrappers = this.transactionWrappers;
+        for (var i = startIndex; i < transactionWrappers.length; i++) {
+            var wrapper = transactionWrappers[i];
+            var initData = this.wrapperInitData[i];
+            var errorThrown;
+            try {
+                // Catching errors makes debugging more difficult, so we start with
+                // errorThrown set to true before setting it to false after calling
+                // close -- if it's still set to true in the finally block, it means
+                // wrapper.close threw.
+                errorThrown = true;
+                if (initData !== OBSERVED_ERROR && wrapper.close) {
+                    wrapper.close.call(this, initData);
+                }
+                errorThrown = false;
+            } finally {
+                if (errorThrown) {
+                    // The closer for wrapper i threw an error; close the remaining
+                    // wrappers but silence any exceptions from them to ensure that the
+                    // first error is the one to bubble up.
+                    try {
+                        this.closeAll(i + 1);
+                    } catch (e) {
+                    }
+                }
+            }
+        }
+        this.wrapperInitData.length = 0;
+    },
+};
+
+export type Transaction = typeof TransactionImpl;
+
+module.exports = TransactionImpl;
+```
+
+# batchedMountComponentIntoNode 解析
+```js
+/**
+ * Batched mount.
+ *
+ * @param {ReactComponent} componentInstance The instance to mount.
+ * @param {DOMElement} container DOM element to mount into.
+ * @param {boolean} shouldReuseMarkup If true, do not insert markup
+ */
+function batchedMountComponentIntoNode(componentInstance, container, shouldReuseMarkup, context) {
+    var transaction = ReactUpdates.ReactReconcileTransaction.getPooled(!shouldReuseMarkup && ReactDOMFeatureFlags.useCreateElement);
+
+    transaction.perform(mountComponentIntoNode, null, componentInstance, container, transaction, shouldReuseMarkup, context);
+    
+    ReactUpdates.ReactReconcileTransaction.release(transaction);
+}
 ```
