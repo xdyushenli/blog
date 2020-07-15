@@ -467,6 +467,7 @@ function () {
 那么, 前面的 `ReactDefaultBatchingStrategy.batchedUpdates` 调用相当于执行了 `ReactUpdates.flushBatchedUpdates`, 那么 `ReactUpdates.flushBatchedUpdates` 又做了什么呢?
 
 ```js
+// src/renderers/shared/stack/reconciler/ReactUpdates.js
 var flushBatchedUpdates = function() {
     // ReactUpdatesFlushTransaction's wrappers will clear the dirtyComponents
     // array and perform any updates enqueued by mount-ready handlers (i.e.,
@@ -475,12 +476,16 @@ var flushBatchedUpdates = function() {
     // dirtyComponents 代表待更新的节点
     // todo asapEnqueued 代表调用 forceUpdate 产生的更新?
     while (dirtyComponents.length || asapEnqueued) {
+        // 初次更新走的应该是这个断言
         if (dirtyComponents.length) {
+            // 关于 ReactUpdatesFlushTransaction 的详细解析见下
             var transaction = ReactUpdatesFlushTransaction.getPooled();
+            // 这行代码实际上做的是执行 runBatchedUpdates.apply(null, [transaction]) 以及当前这个 transaction 对应的前置和后置函数
             transaction.perform(runBatchedUpdates, null, transaction);
             ReactUpdatesFlushTransaction.release(transaction);
         }
 
+        // 立即更新的部分放到后面再看
         if (asapEnqueued) {
             asapEnqueued = false;
             var queue = asapCallbackQueue;
@@ -490,6 +495,70 @@ var flushBatchedUpdates = function() {
         }
     }
 };
+```
+
+让我们暂时放下 `ReactUpdatesFlushTransaction`, 看看 `runBatchedUpdates` 做了什么:
+
+```js
+function runBatchedUpdates(transaction) {
+    var len = transaction.dirtyComponentsLength;
+
+    // Since reconciling a component higher in the owner hierarchy usually (not
+    // always -- see shouldComponentUpdate()) will reconcile children, reconcile
+    // them before their children by sorting the array.
+    // todo
+    dirtyComponents.sort(mountOrderComparator);
+
+    // Any updates enqueued while reconciling must be performed after this entire
+    // batch. Otherwise, if dirtyComponents is [A, B] where A has children B and
+    // C, B could update twice in a single batch if C's render enqueues an update
+    // to B (since B would have already updated, we should skip it, and the only
+    // way we can know to do so is by checking the batch counter).
+    updateBatchNumber++;
+
+    for (var i = 0; i < len; i++) {
+        // If a component is unmounted before pending changes apply, it will still
+        // be here, but we assume that it has cleared its _pendingCallbacks and
+        // that performUpdateIfNecessary is a noop.
+        var component = dirtyComponents[i];
+
+        // If performUpdateIfNecessary happens to enqueue any new updates, we
+        // shouldn't execute the callbacks until the next render happens, so
+        // stash the callbacks first
+        var callbacks = component._pendingCallbacks;
+        component._pendingCallbacks = null;
+
+        var markerName;
+        if (ReactFeatureFlags.logTopLevelRenders) {
+        var namedComponent = component;
+        // Duck type TopLevelWrapper. This is probably always true.
+        if (component._currentElement.type.isReactTopLevelWrapper) {
+            namedComponent = component._renderedComponent;
+        }
+        markerName = 'React update: ' + namedComponent.getName();
+            console.time(markerName);
+        }
+
+        ReactReconciler.performUpdateIfNecessary(
+            component,
+            transaction.reconcileTransaction,
+            updateBatchNumber
+        );
+
+        if (markerName) {
+            console.timeEnd(markerName);
+        }
+
+        if (callbacks) {
+        for (var j = 0; j < callbacks.length; j++) {
+            transaction.callbackQueue.enqueue(
+                callbacks[j],
+                component.getPublicInstance()
+            );
+        }
+        }
+    }
+}
 ```
 
 todo 其实从本节开始已经不怎么按照方法分 p 了...将就看吧
@@ -776,4 +845,10 @@ function batchedMountComponentIntoNode(componentInstance, container, shouldReuse
     
     ReactUpdates.ReactReconcileTransaction.release(transaction);
 }
+```
+
+# ReactUpdatesFlushTransaction 解析
+todo
+```js
+
 ```
