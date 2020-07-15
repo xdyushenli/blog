@@ -172,32 +172,22 @@ currySum(1, 2, 3);
 `部分函数应用（partially applied function）`与柯里化十分相似，不同的是：严格的柯里化要求每次只传入一个参数，而部分函数应用强调一次可以固定任意个参数。
 
 ## 函子
-todo 这部分描述在看完 Haskell 教程后再写
 `函子（functor）`也是函数式编程中的一个重要概念。
-简单来说，函子就是具有某个值、且只能通过 `map` 方法来改变该值的对象。
+简单来说，函子就是具有某个值、且只能通过 `map` 方法来操作该值的对象。
+其中，`map` 函数会对当前函子的值做一定的处理，返回一个新的函子。
 
-不是改变，而是生成新的函子！
-
-我们通常将一种数据结构处理为另一种（也可以转化为同种数据结构）数据结构的**函数**称为函子。
-
-在 Ramda 中，定义了 `map` 函数，且只能通过 `map` 函数来操作数据的对象称为函子。
-其中，`map` 函数用于
-
-在函数式编程的流水线类比中，functor 可以理解为流水线上的某个加工车间。
+在函数式编程的流水线类比中，`functor` 可以理解为流水线上的某个加工车间。
 
 > Tip: 在 Ramda 的源码中，将函子上的 `map` 函数称为 `fantasy map`。
 
+todo《入门》中提到的几个 functor
 
-todo
-纯函数、curry、partial、functor、transducers、《入门》中提到的几个 functor
+纯函数、curry、partial、functor、transducers、
 
+# Ramda 中的 lens
+`lens` 的意思是`透镜`。
+在 Ramda 中，`lens` 提供了一个对象的引用。
 
-todo
-引申：是否可以认为函数式编程中的函数都属于 functor 呢？
-
-# lenses 详解
-todo
-lens 提供了一个对象的引用。
 over：原地修改
 set： 修改
 view：访问
@@ -228,6 +218,7 @@ lens源码实现
 * [简明 JavaScript 函数式编程——入门篇](https://juejin.im/post/5d70e25de51d453c11684cc4)
 * [函数式编程进阶：杰克船长的黑珍珠号](https://juejin.im/post/5e09554bf265da33b5074d7f)
 * [第一类对象](https://zh.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E9%A1%9E%E7%89%A9%E4%BB%B6)
+
 未阅读
 * [函数式引用 lenses](https://kms.netease.com/article/4748)
 * [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
