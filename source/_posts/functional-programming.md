@@ -186,7 +186,17 @@ todo《入门》中提到的几个 functor
 
 # Ramda 中的 lens
 `lens` 的意思是`透镜`。
-在 Ramda 中，`lens` 提供了一个对象的引用。
+在 Ramda 中，`lens` 方法提供了一种数据的处理模式。这么说可能比较抽象，还是结合实例来看下吧。
+
+```js
+
+```
+
+todo 问题来了, 既然有 set 方法, 那还要 lens 的第二个参数干什么?
+
+**可以看到, 通过 lens 我们可以将数据的处理方法抽象出来进行复用, 但 lens 方法本身并不会修改数据**, 真正查看/修改数据的是 `view`、`set`、`over` 等方法。
+
+lensIndex、lensProps、lensPath 提供了数据引用。
 
 over：原地修改
 set： 修改

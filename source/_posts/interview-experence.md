@@ -40,7 +40,7 @@ tags: [ 面试 ]
 ### 垂直居中
 * 对于垂直居中, 首先应该想到的就是 `line-height`, 但是这个只适用于当前元素的子元素均是行内元素或文本时适用。**应当注意的是, 当 `line-height` 的值是百分比时, 其计算是根据字体大小, 而不是元素宽高来计算的!**
 * 其次, 如果是图片的话, 要考虑能不能使用 `vertical-align: middle`。
-原理比较复杂, 首先我们要明白, `vertical-align` 设置的是行内元素相对于父元素 `line-height` 的对其方式。**`<img />标签`也属于行内元素的一种**, 要想让其垂直居中且适用 `vertivertical-align: middle`, 需要把父元素的 `line-height` 设置为父元素高度, **且必须在父元素上加上 `font-size: 0` 才能起作用。**代码如下:
+原理比较复杂, 首先我们要明白, `vertical-align` 设置的是行内元素相对于父元素 `line-height` 的对齐方式。**`<img />标签`也属于行内元素的一种**, 要想让其垂直居中且适用 `vertivertical-align: middle`, 需要把父元素的 `line-height` 设置为父元素高度, **且必须在父元素上加上 `font-size: 0` 才能起作用。**代码如下:
 ```css
 .parent {
     height: 100px;
