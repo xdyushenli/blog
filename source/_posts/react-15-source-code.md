@@ -497,16 +497,21 @@ var flushBatchedUpdates = function() {
 };
 ```
 
+关于 `ReactUpdatesFlushTransaction` 我们了解到:
+todo
+
 让我们暂时放下 `ReactUpdatesFlushTransaction`, 看看 `runBatchedUpdates` 做了什么:
 
 ```js
+// src/renderers/shared/stack/reconciler/ReactUpdates.js
 function runBatchedUpdates(transaction) {
     var len = transaction.dirtyComponentsLength;
 
     // Since reconciling a component higher in the owner hierarchy usually (not
     // always -- see shouldComponentUpdate()) will reconcile children, reconcile
     // them before their children by sorting the array.
-    // todo
+    // dirtyComponents 是一个数组, 里面存放的是需要更新的组件
+    // mountOrderComparator 是一个函数, 会根据组件上的 _mountOrder 属性进行排序
     dirtyComponents.sort(mountOrderComparator);
 
     // Any updates enqueued while reconciling must be performed after this entire
@@ -530,15 +535,16 @@ function runBatchedUpdates(transaction) {
 
         var markerName;
         if (ReactFeatureFlags.logTopLevelRenders) {
-        var namedComponent = component;
-        // Duck type TopLevelWrapper. This is probably always true.
-        if (component._currentElement.type.isReactTopLevelWrapper) {
-            namedComponent = component._renderedComponent;
-        }
-        markerName = 'React update: ' + namedComponent.getName();
+            var namedComponent = component;
+            // Duck type TopLevelWrapper. This is probably always true.
+            if (component._currentElement.type.isReactTopLevelWrapper) {
+                namedComponent = component._renderedComponent;
+            }
+            markerName = 'React update: ' + namedComponent.getName();
             console.time(markerName);
         }
 
+        // 前面的处理都不太重要, 关键是这里
         ReactReconciler.performUpdateIfNecessary(
             component,
             transaction.reconcileTransaction,
@@ -550,12 +556,12 @@ function runBatchedUpdates(transaction) {
         }
 
         if (callbacks) {
-        for (var j = 0; j < callbacks.length; j++) {
-            transaction.callbackQueue.enqueue(
-                callbacks[j],
-                component.getPublicInstance()
-            );
-        }
+            for (var j = 0; j < callbacks.length; j++) {
+                transaction.callbackQueue.enqueue(
+                    callbacks[j],
+                    component.getPublicInstance()
+                );
+            }
         }
     }
 }
@@ -848,7 +854,53 @@ function batchedMountComponentIntoNode(componentInstance, container, shouldReuse
 ```
 
 # ReactUpdatesFlushTransaction 解析
-todo
 ```js
+function ReactUpdatesFlushTransaction() {
+    // 在后面的代码中, ReactUpdatesFlushTransaction 继承了 Transaction 的方法, 因此这里可以调用 reinitializeTransaction()
+    this.reinitializeTransaction();
+    this.dirtyComponentsLength = null;
+    // CallbackQueue 见下
+    todo
+    this.callbackQueue = CallbackQueue.getPooled();
+    this.reconcileTransaction = ReactUpdates.ReactReconcileTransaction.getPooled(
+    /* useCreateElement */ true
+    );
+}
 
+Object.assign(
+    ReactUpdatesFlushTransaction.prototype,
+    Transaction,
+    {
+        getTransactionWrappers: function () {
+            return TRANSACTION_WRAPPERS;
+        },
+
+        destructor: function () {
+            this.dirtyComponentsLength = null;
+            CallbackQueue.release(this.callbackQueue);
+            this.callbackQueue = null;
+            ReactUpdates.ReactReconcileTransaction.release(this.reconcileTransaction);
+            this.reconcileTransaction = null;
+        },
+
+        perform: function (method, scope, a) {
+            // Essentially calls `this.reconcileTransaction.perform(method, scope, a)`
+            // with this transaction's wrappers around it.
+            return Transaction.perform.call(
+                this,
+                this.reconcileTransaction.perform,
+                this.reconcileTransaction,
+                method,
+                scope,
+                a
+            );
+        },
+    }
+);
+```
+
+# CallbackQueue
+```js
+// src/renderers/shared/utils/CallbackQueue.js
+todo
 ```
