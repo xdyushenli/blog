@@ -24,6 +24,7 @@ https://stackoverflow.com/questions/34493372/what-is-the-default-unit-of-style-i
 https://github.com/haitaodesign/RN_STYLESHEET#%E5%9B%BE%E7%89%87%E9%80%82%E9%85%8D
 https://bingoootang.github.io/blog/2018/08/31/react-native-adaptive/
 https://zhuanlan.zhihu.com/p/55826586
+https://dev.to/hrastnik/the-react-native-aspectratio-ge3
 
 # 素材区
 图片 RN 会自动进行适配(https://github.com/haitaodesign/RN_STYLESHEET#%E5%9B%BE%E7%89%87%E9%80%82%E9%85%8D)
