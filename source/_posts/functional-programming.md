@@ -112,10 +112,6 @@ f(a,b,c) → f(a)(b)(c)
 
 **柯里化 ≠ 部分函数应用！！**柯里化强调的是生成单元函数，`部分函数应用（partially applied function）`的强调的固定任意元参数。
 
-### 有没有形象点的比喻？
-当然有！
-todo 积木工厂？可以不写！
-
 ### curry 函数的实现
 下面是一个 curry 函数的简单实现：
 ```js
@@ -188,11 +184,33 @@ todo《入门》中提到的几个 functor
 `lens` 的意思是`透镜`。
 在 Ramda 中，`lens` 方法提供了一种数据的处理模式。这么说可能比较抽象，还是结合实例来看下吧。
 
-```js
+lens 方法：需要传入 getter 与 setter。
+向 R.view 传入 lens 会调用 getter，并将后面的参数传入 getter。
+向 R.set & R.over 传入 lens 会调用 setter，并将后面的参数传入 setter。
 
+lensIndex 相当于
+```js
+R.lensIndex(index)
+// ==>
+R.lens(R.nth(index), R.update(index))
 ```
 
-todo 问题来了, 既然有 set 方法, 那还要 lens 的第二个参数干什么?
+lensProp 相当于
+```js
+R.lensProp('x')
+// ==>
+R.lens(R.prop('x'), R.assoc('x'));
+```
+
+lensPath 相当于
+```js
+const path = ['a', 'b'];
+// {a: {b: 1}}
+R.lensPath(path)
+// ==>
+R.lens(R.path(path), R.assocPath(path))
+```
+lensProp 相当于 lensPath 的简化版本！
 
 **可以看到, 通过 lens 我们可以将数据的处理方法抽象出来进行复用, 但 lens 方法本身并不会修改数据**, 真正查看/修改数据的是 `view`、`set`、`over` 等方法。
 
