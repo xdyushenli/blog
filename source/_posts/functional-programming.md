@@ -184,25 +184,46 @@ todo《入门》中提到的几个 functor
 `lens` 的意思是`透镜`。
 在 Ramda 中，`lens` 方法提供了一种数据的处理模式。这么说可能比较抽象，还是结合实例来看下吧。
 
-lens 方法：需要传入 getter 与 setter。
-向 R.view 传入 lens 会调用 getter，并将后面的参数传入 getter。
-向 R.set & R.over 传入 lens 会调用 setter，并将后面的参数传入 setter。
+先来介绍一下 `lens` 方法。
+`lens` 方法：需要传入 `getter` 与 `setter`，返回封装了 `getter` 和 `setter` 方法的 `lens`。
+使用方法如下：
+```js
+const xLens = R.lens(R.prop('x'), R.assoc('x'));
 
-lensIndex 相当于
+R.view(xLens, {x: 1, y: 2});            //=> 1
+R.set(xLens, 4, {x: 1, y: 2});          //=> {x: 4, y: 2}
+R.over(xLens, R.negate, {x: 1, y: 2});  //=> {x: -1, y: 2}
+```
+
+**可以看到, 通过 lens 我们可以将数据的处理方法抽象出来进行复用, 但 lens 方法本身并不会修改数据**, 真正查看/修改数据的是 `view`、`set` 和 `over` 方法。
+
+这三个方法的作用分别是：
+* `over`：原地修改。
+* `set`：修改。
+* `view`：访问。
+
+从上面的例子可以得到两个结论：
+* 调用 `view` 方法，会调用作为参数传入的 `lens` 的 `getter`，并将后面的参数传入 `getter`。
+* 调用 `set` & `over` 方法，会调用传入的 `lens` 的 `setter`，并将后面的参数传入 `setter`。
+
+除了 `lens` 之外，还有三个方法可以用于聚焦某个值，分别是 `lensIndex`、`lensProp` 和 `lensPath`。
+**这三种方法本质上都是 lens 的简化版本，可以看做传入特定 getter 与 setter 的 lens！**
+
+`lensIndex` 相当于
 ```js
 R.lensIndex(index)
 // ==>
 R.lens(R.nth(index), R.update(index))
 ```
 
-lensProp 相当于
+`lensProp` 相当于
 ```js
 R.lensProp('x')
 // ==>
 R.lens(R.prop('x'), R.assoc('x'));
 ```
 
-lensPath 相当于
+`lensPath` 相当于
 ```js
 const path = ['a', 'b'];
 // {a: {b: 1}}
@@ -210,20 +231,6 @@ R.lensPath(path)
 // ==>
 R.lens(R.path(path), R.assocPath(path))
 ```
-lensProp 相当于 lensPath 的简化版本！
-
-**可以看到, 通过 lens 我们可以将数据的处理方法抽象出来进行复用, 但 lens 方法本身并不会修改数据**, 真正查看/修改数据的是 `view`、`set`、`over` 等方法。
-
-lensIndex、lensProps、lensPath 提供了数据引用。
-
-over：原地修改
-set： 修改
-view：访问
-over、set 函数的作用？
-* [函数式引用 lenses](https://kms.netease.com/article/4748)
-
-todo
-lens源码实现
 
 # transducer
 参数列表
@@ -232,12 +239,13 @@ lens源码实现
 3. 初值
 4. 目标数组
 
+todo
 * [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
-[a good introductory article](http://simplectic.com/blog/2015/ramda-transducers-logs/
+
 
 # What else?
 到这里就结束啦。
-不过这里有一份阅读 Think in Ramda 专栏的[摘要](todo)，介绍了一些函数式编程的基本概念以及 Ramda API，回顾时可以看一下。
+不过这里有一份阅读 Think in Ramda 专栏的[摘要](todo 填写链接)，介绍了一些函数式编程的基本概念以及 Ramda API，回顾时可以看一下。
 
 # 参考资料
 * [Why Ramda?](https://fr.umio.us/why-ramda/)
@@ -246,8 +254,7 @@ lens源码实现
 * [简明 JavaScript 函数式编程——入门篇](https://juejin.im/post/5d70e25de51d453c11684cc4)
 * [函数式编程进阶：杰克船长的黑珍珠号](https://juejin.im/post/5e09554bf265da33b5074d7f)
 * [第一类对象](https://zh.wikipedia.org/wiki/%E7%AC%AC%E4%B8%80%E9%A1%9E%E7%89%A9%E4%BB%B6)
-
-未阅读
 * [函数式引用 lenses](https://kms.netease.com/article/4748)
 * [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
 * [Transducers: Supercharge your functional JavaScript](https://www.jeremydaly.com/transducers-supercharge-functional-javascript/)
+* [a good introductory article](http://simplectic.com/blog/2015/ramda-transducers-logs/)
