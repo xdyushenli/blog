@@ -1950,6 +1950,8 @@ JavaScript 负责将请求发送到代理服务器, 之后代理服务器发送�
 对于非简单请求来说, 浏览器会先发送`预检请求(preflight)`, 询问服务器当前网页能不能发送 CORS 请求。预检请求的请求方法是 `OPTIONS`。
 在预检请求中, 头部必须包含三个字段:
 * `origin`: 发送请求的域名。
+    * `host` 字段是请求将要被发送到的域名。
+    * 在浏览器里，`origin` 字段的值是由浏览器自己填的, **不能被覆盖！**
 * `Access-Control-Request-Method`: 实际请求使用的请求方法。
 * `Access-Control-Request-Headers`: 实际请求将携带的、不属于简单请求范畴的首部字段。
 
@@ -3657,6 +3659,22 @@ VPN属于网络安全设备，是为了防止第三方非法入侵的设备，�
 　　
 　　 AH协议通过在整个IP数据报中实施一个消息文摘计算来提供完整性和认证服务。一个消息文摘就是一个特定的单向数据函数，它能够创建数据报的唯一的数字指纹。消息文摘算法的输出结果放到 AH包头的认证数据（Authentication_Data）区。消息文摘5算法（MD5）是一个单向数学函数。当应用到分组数据中时，它将整个数据分割成若干个128比特的信息分组。每个128比特为一组的信息是大分组数据的压缩或摘要的表示。当以这种方式使用时，MD5只提供数字的完整性服务。一个消息文摘在被发送之前和数据被接收到以后都可以根据一组数据计算出来。如果两次计算出来的文摘值是一样的，那么分组数据在传输过程中就没有被改变。这样就防止了无意或恶意的窜改。在使用HMAC－MD5认证过的数据交换中，发送者使用以前交换过的密钥来首次计算数据报的64比特分组的MD5文摘。从一系列的16比特中计算出来的文摘值被累加成一个值，然后放到AH包头的认证数据区，随后数据报被发送给接收者。接收者也必须知道密钥值，以便计算出正确的消息文摘并且将其与接收到的认证
 
+## Fetch、Ajax、XMLHTTPRequest 以及 WebSocket 的区别
+Ajax 是一种请求，这种请求不返回整个页面，而是返回数据，用于局部更新。
+
+通过 XMLHTTPRequest 能够发送 Ajax 请求。
+
+Fetch 是增强版的 XMLHTTPRequest，也能用于发送 Ajax 请求。
+二者的不同在于 Fetch 是 Promise 风格的，避免了回调地狱。
+
+websocket 与 http 相对，是另一种通信协议。
+
+### 参考资料
+* https://medium.com/beginners-guide-to-mobile-web-development/the-fetch-api-2c962591f5c#:~:text=It%20is%20an%20improvement%20over,out%20JavaScript%20Promises%3A%20an%20Introduction%20.
+* https://stackoverflow.com/questions/35549547/fetch-api-vs-xmlhttprequest
+* https://blogs.windows.com/windowsdeveloper/2016/03/14/when-to-use-a-http-call-instead-of-a-websocket-or-http-2-0/#:~:text=If%20WebSockets%20are%20used%2C%20each,each%20message%20sent%20and%20received.
+* https://stackoverflow.com/questions/28582935/does-http-2-make-websockets-obsolete
+
 # 数据结构与算法
 ## 堆
 ### 预备知识
@@ -4140,6 +4158,7 @@ todo
 
 ## Web Worker
 todo
+A service worker is a script that the client (your browser) runs in the background separate from the web page.
 
 ## Service Worker
 Service workers 本质上充当Web应用程序与浏览器之间的代理服务器, 也可以在网络可用时作为浏览器和网络间的代理。它们旨在(除其他之外)使得能够创建有效的离线体验, 拦截网络请求并基于网络是否可用以及更新的资源是否驻留在服务器上来采取适当的动作。他们还允许访问推送通知和后台同步API。
@@ -4151,6 +4170,26 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API
 https://developer.mozilla.org/zh-CN/docs/Web/API/Service_Worker_API/Using_Service_Workers
 todo
 
+## Worklets
+
+## Web Worker vs Service Worker vs Worklets
+They are all workers.
+workers 都运行于浏览器的主流程之外。
+workers don't have access to the DOM.
+
+web worker don't has particular propose, it can do almost everything!
+
+service worker is designed to be a proxy between the browser and the network/cache.
+> Once they are installed and activated, service workers are able to intercept any network requests made from the main document.
+> Once intercepted, a service worker can, for example, respond by returning a document from the cache instead of going to the network, thereby allowing web applications to function offline!
+
+> Worklets are a very lightweight, highly specific, worker. They enable us as developers to hook into various parts of the browser’s rendering process.
+
+> brief:
+Worklets are hooks into the browser’s rendering pipeline, enabling us to have low-level access to the browser’s rendering processes such as styling and layout.
+Service workers are a proxy between the browser and the network. By intercepting requests made by the document, service workers can redirect requests to a cache, enabling offline access.
+Web workers are general-purpose scripts that enable us to offload processor-intensive work from the main thread.
+
 ## 参考资料
 * [(1.6w字)浏览器灵魂之问, 请问你能接得住几个?](https://juejin.im/post/5df5bcea6fb9a016091def69#heading-8)
 * [HTTP/2 push is tougher than I thought](https://jakearchibald.com/2017/h2-push-tougher-than-i-thought/)
@@ -4161,6 +4200,8 @@ todo
 * [无线性能优化: Composite](https://fed.taobao.org/blog/2016/04/26/performance-composite/)
 * [浏览器渲染过程与性能优化](https://juejin.im/post/59d489156fb9a00a571d6509#heading-3)
 * [MDN: IndexedDB](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API/Basic_Concepts_Behind_IndexedDB)
+* [A Guide to Service Workers in React.js](https://levelup.gitconnected.com/a-guide-to-service-workers-in-react-js-82aec1d6a22d)
+* [Web workers vs Service workers vs Worklets](https://bitsofco.de/web-workers-vs-service-workers-vs-worklets/#:~:text=Service%20workers%20are%20a%20proxy,work%20from%20the%20main%20thread.)
 
 # git
 ## git merge 与 git rebase 的区别
