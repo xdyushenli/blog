@@ -3668,7 +3668,11 @@ Fetch 是增强版的 XMLHTTPRequest，也能用于发送 Ajax 请求。
 二者的不同在于 Fetch 是 Promise 风格的，避免了回调地狱。
 
 websocket 与 http 相对，是另一种通信协议。
+websocket 与 http 都建立在tcp上，但二者之后发送的内容与断开的时机不同。
+websocket 必须通过 http 建立一次连接，之后所有发送的内容都直接走 tcp 连接，与 http 无关。
 
+最后一个链接讲的很清楚。
+todo 最后一个链接的三张图
 
 ### 参考资料
 * https://medium.com/beginners-guide-to-mobile-web-development/the-fetch-api-2c962591f5c#:~:text=It%20is%20an%20improvement%20over,out%20JavaScript%20Promises%3A%20an%20Introduction%20.
@@ -3676,6 +3680,7 @@ websocket 与 http 相对，是另一种通信协议。
 * https://blogs.windows.com/windowsdeveloper/2016/03/14/when-to-use-a-http-call-instead-of-a-websocket-or-http-2-0/#:~:text=If%20WebSockets%20are%20used%2C%20each,each%20message%20sent%20and%20received.
 * https://stackoverflow.com/questions/28582935/does-http-2-make-websockets-obsolete
 * https://www.cnblogs.com/merray/p/7918977.html
+* https://developerinsider.co/difference-between-http-and-http-2-0-websocket/#:~:text=WebSocket%20is%20a%20protocol%20providing,does%20not%20allow%20direct%20HTTP).
 
 # 数据结构与算法
 ## 堆
