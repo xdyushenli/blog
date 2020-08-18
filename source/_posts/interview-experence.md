@@ -3669,11 +3669,13 @@ Fetch 是增强版的 XMLHTTPRequest，也能用于发送 Ajax 请求。
 
 websocket 与 http 相对，是另一种通信协议。
 
+
 ### 参考资料
 * https://medium.com/beginners-guide-to-mobile-web-development/the-fetch-api-2c962591f5c#:~:text=It%20is%20an%20improvement%20over,out%20JavaScript%20Promises%3A%20an%20Introduction%20.
 * https://stackoverflow.com/questions/35549547/fetch-api-vs-xmlhttprequest
 * https://blogs.windows.com/windowsdeveloper/2016/03/14/when-to-use-a-http-call-instead-of-a-websocket-or-http-2-0/#:~:text=If%20WebSockets%20are%20used%2C%20each,each%20message%20sent%20and%20received.
 * https://stackoverflow.com/questions/28582935/does-http-2-make-websockets-obsolete
+* https://www.cnblogs.com/merray/p/7918977.html
 
 # 数据结构与算法
 ## 堆
