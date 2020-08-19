@@ -75,12 +75,11 @@ prevState === nextState;
 当数据量较小时，可以采用直接深复制的方法实现数据不可变。当数据量比较大时，可以使用 `ImmutableJS` 等框架来实现这一范式。
 
 # 函数式编程 vs 命令式编程
-todo
+todo 二者的区别
 函数式编程着眼的**函数**，而不是**过程**。它强调如何通过函数的组合变换来解决问题，而不是通过写什么语句去解决问题。
 
 推崇函数式编程，核心理念是数据不变性以及函数无副作用。
 推崇通过构建函数序列来完成工作。每个函数对数据进行变换，并将结果传递给下一个函数。这种范式被称为`pipeline`。
-
 
 可以通过提供的高阶函数 API 来对函数进行复用。
 
@@ -91,8 +90,7 @@ todo
 `纯函数（pure function）`指的是没有**“副作用”**的函数。
 其中，会带来副作用的操作包括但不限于：创建日期对象、请求接口等。
 
-todo 引用透明的英文
-纯函数的特征是：输入同样的参数，总会得到相同的输出。这被称为`引用透明性（）`。
+纯函数的特征是：输入同样的参数，总会得到相同的输出。这被称为`引用透明性（referential transparency）`。
 
 ## 柯里化
 `柯里化（curry）`也是函数式编程的一个重要概念。
@@ -178,8 +176,6 @@ currySum(1, 2, 3);
 
 todo《入门》中提到的几个 functor
 
-纯函数、curry、partial、functor、transducers、
-
 # Ramda 中的 lens
 `lens` 的意思是`透镜`。
 在 Ramda 中，`lens` 方法提供了一种数据的处理模式。这么说可能比较抽象，还是结合实例来看下吧。
@@ -201,6 +197,8 @@ R.over(xLens, R.negate, {x: 1, y: 2});  //=> {x: -1, y: 2}
 * `over`：原地修改。
 * `set`：修改。
 * `view`：访问。
+
+todo over set 区别
 
 从上面的例子可以得到两个结论：
 * 调用 `view` 方法，会调用作为参数传入的 `lens` 的 `getter`，并将后面的参数传入 `getter`。
@@ -232,6 +230,8 @@ R.lensPath(path)
 R.lens(R.path(path), R.assocPath(path))
 ```
 
+todo lens 源码
+
 # transducer
 参数列表
 1. 每个数组元素上要执行的操作
@@ -245,7 +245,7 @@ todo
 
 # What else?
 到这里就结束啦。
-不过这里有一份阅读 Think in Ramda 专栏的[摘要](todo 填写链接)，介绍了一些函数式编程的基本概念以及 Ramda API，回顾时可以看一下。
+不过这里有一份阅读 Think in Ramda 专栏的[摘要](https://github.com/xdyushenli/blog/blob/master/source/files/functional-programming/Thinking-in-Ramda.md)，介绍了一些函数式编程的基本概念以及 Ramda API，回顾时可以看一下。
 
 # 参考资料
 * [Why Ramda?](https://fr.umio.us/why-ramda/)
