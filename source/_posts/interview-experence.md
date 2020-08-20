@@ -1060,6 +1060,11 @@ todo
 https://juejin.im/post/5a9923e9518825558251c96a
 https://www.zhangxinxu.com/wordpress/2010/01/%E5%9B%9E%E6%B5%81%E4%B8%8E%E9%87%8D%E7%BB%98%EF%BC%9Acss%E6%80%A7%E8%83%BD%E8%AE%A9javascript%E5%8F%98%E6%85%A2%EF%BC%9F/
 
+## padding-block、border-block、margin-block
+![padding-block、border-block、margin-block](/images/interview-experence/39.png)
+
+具体方向由 [writing-mode](https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode), [direction](https://developer.mozilla.org/en-US/docs/Web/CSS/direction) 以及 [text-orientation](https://developer.mozilla.org/en-US/docs/Web/CSS/text-orientation) 决定。
+
 # JavaScript
 ## 闭包
 闭包是函数和声明该函数的词法环境的组合。在 js 中, 函数运行在它们被定义的作用域, 而不是它们被执行的作用域。
