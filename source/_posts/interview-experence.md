@@ -1063,7 +1063,9 @@ https://www.zhangxinxu.com/wordpress/2010/01/%E5%9B%9E%E6%B5%81%E4%B8%8E%E9%87%8
 ## padding-block、border-block、margin-block
 ![padding-block、border-block、margin-block](/images/interview-experence/39.png)
 
-具体方向由 [writing-mode](https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode), [direction](https://developer.mozilla.org/en-US/docs/Web/CSS/direction) 以及 [text-orientation](https://developer.mozilla.org/en-US/docs/Web/CSS/text-orientation) 决定。
+具体哪个方向为 `start` 由 [writing-mode](https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode), [direction](https://developer.mozilla.org/en-US/docs/Web/CSS/direction) 以及 [text-orientation](https://developer.mozilla.org/en-US/docs/Web/CSS/text-orientation) 决定。
+
+[演示地址](https://developer.mozilla.org/en-US/docs/Web/CSS/padding-block-start)
 
 # JavaScript
 ## 闭包
