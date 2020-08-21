@@ -190,6 +190,7 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
 
 todo
 以下内容为总结, 如果要写在文章里需要另行扩展。
+
 归根结底就一句话, onResolvedFns/onRejectedFns 中存放的函数, 都是同级调用, 假如当前 Promise 是 p, 那么 p 的onResolvedFns/onRejectedFns 中存放的函数, 都是由 p.then 传入的参数。p.promiseList 中存放的, 是按照 p.then 调用顺序存放的、p.then 返回的 Promise。
 如果涉及到更深层次的 then 调用, 首先要在 p.promiseList 中找到对应的 Promise。由更深层次 then 调用传入的函数, 就存放在这些 Promise 的 onResolvedFns/onRejectedFns 中。
 在执行的时候, 也要小心, 要广度优先执行, 先执行完所有同级 then 调用, 再执行更深层次的 then 调用。
