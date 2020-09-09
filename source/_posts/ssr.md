@@ -61,6 +61,7 @@ In development mode, `getStaticProps` will also be invoked at every request time
 
 ---- dyamic route
 
+
 <!-- =========================================== -->
 
 # 
