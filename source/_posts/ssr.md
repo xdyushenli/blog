@@ -1,10 +1,14 @@
 ---
-title: ssr
+title: SSR 不完全指南
 date: 2020-09-02 19:24:03
-tags: [ react ]
+tags: [ react, ssr, next.js ]
 ---
 # What is SSR?
-SSR(server-side-render) means the content on your webpage rendered in the server not in the browser using JavaScript. It will return a fully rendered html file that will directly paint in your screen, not like usual React App created by create-react-app that would return a `.js` file.
+`SSR(server-side-render)` means the content on your webpage rendered in the server not in the browser using JavaScript.
+
+It will return a fully rendered `.html` file that will directly paint in your screen, not like usual React App created by `create-react-app` that would return a `.js` file.
+
+The biggest mistake about SSR is 
 
 todo Is it a html file without js at all? A pure static resource?
 todo what is ssg?
@@ -60,10 +64,11 @@ In markdown file:
 In development mode, `getStaticProps` will also be invoked at every request time.
 
 ---- dyamic route
+getStaticProps
 
 
 <!-- =========================================== -->
 
-# 
-- https://blog.logrocket.com/why-you-should-render-react-on-the-server-side-a50507163b79/#:~:text=Server%2Dside%20rendering%20(SSR),comes%20as%20fully%20rendered%20HTML.
--> Abstract: Next.js
+# 参考资料
+- [Why you should render React on the server side](https://blog.logrocket.com/why-you-should-render-react-on-the-server-side-a50507163b79/#:~:text=Server%2Dside%20rendering%20(SSR),comes%20as%20fully%20rendered%20HTML)
+- [Next.js Documentation](https://nextjs.org/docs/getting-started)
