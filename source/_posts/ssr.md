@@ -12,6 +12,7 @@ The biggest mistake about SSR is
 
 todo Is it a html file without js at all? A pure static resource?
 todo what is ssg?
+todo SSR 怎么判断哪些 js 是必要的、必须保留的？
 
 Traditional SSR language or framework are like `PHP`, `Java`, `ASP.NET` and `Node.js`. Luckily, we have so much choices now, like `Nect.js`, `Gatsby` and ext. 
 

@@ -4,7 +4,7 @@ date: 2020-06-12 09:42:15
 tags: [ javascript, ramda, 函数式编程 ]
 ---
 # 前言
-这是一篇介绍纯函数的博客。
+这是一篇介绍函数式编程 & `ramda` 的博客。
 
 # 什么是函数式编程？
 JavaScript 不是一门函数式编程的语言，但是能够很好的支持函数式编程范式。因为函数在 JavaScript 中是作为`一等公民（First-class citizen）`的。
@@ -30,6 +30,16 @@ Linux 有一个很著名的设计理念：**让一个程序专注做一件事。
 这里的数据不可变性并不是说我们在程序运行时不能修改数据，而是说不在原数据上直接进行修改。
 
 也就是说，我们每次修改之后的数据都应该指向内存中一块新的区域，而不是和修改前的数据指向同一区域。
+
+## 还有什么值得一提的？
+函数式编程着眼的**函数**，而不是**过程**。它强调如何通过函数的组合变换来解决问题，而不是通过写什么语句去解决问题。
+
+推崇函数式编程，核心理念是数据不变性以及函数无副作用。
+推崇通过构建函数序列来完成工作。每个函数对数据进行变换，并将结果传递给下一个函数。这种范式被称为`pipeline`。
+
+可以通过提供的高阶函数 API 来对函数进行复用。
+
+函数式编程中，函数就是一切。函数可以是操作本身，也可以是被操作的数据。
 
 # 所以这一切和 React 有什么关系呢？
 别急，下面我们会来解释**为什么推荐在 React 中使用函数式编程**以及**为什么数据不可变对 React 很重要。**
@@ -73,17 +83,6 @@ prevState === nextState;
 
 在 React 中使用这种编程范式时，需要根据数据量来具体判断。
 当数据量较小时，可以采用直接深复制的方法实现数据不可变。当数据量比较大时，可以使用 `ImmutableJS` 等框架来实现这一范式。
-
-# 函数式编程 vs 命令式编程
-todo 二者的区别
-函数式编程着眼的**函数**，而不是**过程**。它强调如何通过函数的组合变换来解决问题，而不是通过写什么语句去解决问题。
-
-推崇函数式编程，核心理念是数据不变性以及函数无副作用。
-推崇通过构建函数序列来完成工作。每个函数对数据进行变换，并将结果传递给下一个函数。这种范式被称为`pipeline`。
-
-可以通过提供的高阶函数 API 来对函数进行复用。
-
-函数式编程中，函数就是一切。函数可以是操作本身，也可以是被操作的数据。
 
 # 函数式编程的重要概念
 ## 纯函数
@@ -174,9 +173,10 @@ currySum(1, 2, 3);
 
 > Tip: 在 Ramda 的源码中，将函子上的 `map` 函数称为 `fantasy map`。
 
-todo《入门》中提到的几个 functor
+todo 书中的函子
 
-# Ramda 中的 lens
+# Ramda 中值得注意的 API
+## lens
 `lens` 的意思是`透镜`。
 在 Ramda 中，`lens` 方法提供了一种数据的处理模式。这么说可能比较抽象，还是结合实例来看下吧。
 
@@ -194,11 +194,11 @@ R.over(xLens, R.negate, {x: 1, y: 2});  //=> {x: -1, y: 2}
 **可以看到, 通过 lens 我们可以将数据的处理方法抽象出来进行复用, 但 lens 方法本身并不会修改数据**, 真正查看/修改数据的是 `view`、`set` 和 `over` 方法。
 
 这三个方法的作用分别是：
-* `over`：原地修改。
-* `set`：修改。
+* `over`：将变换函数应用于透镜。
+* `set`：修改透镜访问的值。
 * `view`：访问。
 
-todo over set 区别
+其中，`over` 和 `set` 的相同点是它们都会返回新的对象，不同点是对于修改值的方式不同。
 
 从上面的例子可以得到两个结论：
 * 调用 `view` 方法，会调用作为参数传入的 `lens` 的 `getter`，并将后面的参数传入 `getter`。
@@ -230,18 +230,160 @@ R.lensPath(path)
 R.lens(R.path(path), R.assocPath(path))
 ```
 
-todo lens 源码
-
-# transducer
-参数列表
-1. 每个数组元素上要执行的操作
-2. reduce 方法接受的函数，有两个参数，分别为累加值和当前值（第一个参数调用的结果）
-3. 初值
-4. 目标数组
+### lens 的源码解析
+在知晓了 `lens` 的定义，以及与其搭配的几个方法后，我们就可以来看看 `lens` 的源码了。
 
 todo
-* [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
+```js
+const curry = (fn) => {
+    return (...args) => {
+        if (fn.length <= args.length) {
+            return fn(...args);
+        } else {
+            return curry(fn.bind(undefined, ...args));
+        }
+    }
+};
 
+const dispatchable = (methodNames, transducerCreator, fn) => {
+    // 缩略版
+    return function () {
+        const obj = arguments[arguments.length - 1];
+        
+        if (!Array.isArray(obj)) {
+            let idx = 0;
+
+            while (idx < methodNames.length) {
+                if (typeof obj[methodNames[idx]] === 'function') {
+                    return obj[methodNames[idx]].apply(obj, Array.prototype.slice.call(arguments, 0, -1));
+                }
+
+                idx += 1;
+            }
+        }
+    };
+}
+
+// xmap
+const map = curry(dispatchable(['fantasy-land/map', 'map'], {}, function map(fn, functor) {
+    // 缩略版
+    return fn.call(this, functor.apply(this, arguments));
+}));
+
+const lens = curry(function lens(getter, setter) {
+    return function (toFunctorFn) {
+        return function (target) {
+            return map(
+                function (focus) {
+                    return setter(focus, target);
+                },
+                toFunctorFn(getter(target))
+            );
+        };
+    };
+});
+
+const Const = function(x) {
+    return {value: x, 'fantasy-land/map': function() { return this; }};
+};
+
+const Identity = function(x) {
+    return {value: x, map: function(f) { return Identity(f(x)); }};
+};
+
+const always = curry(function always(val) {
+    return function() {
+        return val;
+    };
+});
+
+const view = curry(function view(lens, x) {
+    // Using `Const` effectively ignores the setter function of the `lens`,
+    // leaving the value returned by the getter function unmodified.
+    return lens(Const)(x).value;
+});
+
+const over = curry(function over(lens, f, x) {
+    // The value returned by the getter function is first transformed with `f`,
+    // then set as the value of an `Identity`. This is then mapped over with the
+    // setter function of the lens.
+    return lens(function(y) { return Identity(f(y)); })(x).value;
+});
+
+const set = curry(function set(lens, v, x) {
+    return over(lens, always(v), x);
+});
+
+// =========================================
+// 测试代码
+const data = { x: 1, y: 2 };
+const xLens = lens(R.prop('x'), R.assoc('x'));
+
+const viewValue = view(xLens, data);
+const setValue = set(xLens, 2, data);
+const overValue = over(xLens, R.negate, data);
+
+// 1
+console.log(viewValue);
+// { x: 2, y: 2 }
+console.log(setValue);
+// { x: -1, y: 2}
+console.log(overValue);
+
+// false
+console.log('setValue', setValue === data);
+// false
+console.log('overValue', overValue === data);
+```
+
+## transduce
+### 什么是 transducer？transducer 的作用是什么？
+`transducer` 接受一个对象或数组，并在每个属性或元素上执行一定的操作，并返回由操作结果组成的对象。
+感觉上有点像 `map` 与 `reduce` 的结合，并且这个 `map` 允许跳过元素。
+
+在 `ramda` 中提供了 `transduce` API，这个 API 接受四个参数：
+1. `transformer`，即要在每个元素或数组上执行的操作。
+2. 函数，类似于 `javascript` 中 `reduce` 方法接受的函数，有两个参数：第一个参数为累加值，第二个参数为当前值。
+累加值的初值是第三个参数，当前值是通过在当前元素上调用第一个参数得到的。
+3. 初值。
+4. 源数组或对象。
+
+### transducer 的应用场景？
+想象这样一个场景，你有一个由人名组成的数组，就像这样：
+
+```js
+const names = ['tom', 'joe', 'eric', 'lily', 'ted'];
+```
+
+你需要从中获取所有名字中有 `e` 这个字母的人名，并将它们的字母大写，并且出于某种特殊原因，你需要将这些人名反过来。
+在 `ramda` 中，我们可以这么写：
+
+```js
+const transformer = R.compose(
+    R.filter(x => /e/i.test(x)),
+    R.map(R.toUpper),
+    R.map(R.reverse),
+)
+
+// ["EOJ", "CIRE", "DET"]
+transformer(names);
+```
+
+在这里，数组被遍历了三次才得到最终结果，并且当我们还需要进行其他操作时，还需要继续遍历！
+
+通过 `R.transduce` 我们可以将上面的代码转化为如下形式：
+
+```js
+const transformer = R.compose(
+    R.filter(x => /e/i.test(x)),
+    R.map(R.toUpper),
+    R.map(R.reverse),
+)
+
+R.transduce(transformer, R.flip(R.append), [], names);
+```
+
+**与传统的 map 方式相比，transduce 只会遍历一遍数组就能得到最终结果！**这也是为什么我们需要用 `transduce` 来进行复杂操作的原因。
 
 # What else?
 到这里就结束啦。
@@ -258,3 +400,4 @@ todo
 * [transduce，高级抽象foldable](https://kms.netease.com/article/4303)
 * [Transducers: Supercharge your functional JavaScript](https://www.jeremydaly.com/transducers-supercharge-functional-javascript/)
 * [a good introductory article](http://simplectic.com/blog/2015/ramda-transducers-logs/)
+* [todo](https://juejin.im/post/6844903762641829901)

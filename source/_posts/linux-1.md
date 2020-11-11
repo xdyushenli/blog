@@ -136,5 +136,6 @@ CMOS 是主板上的一小块芯片，里面存储了硬件系统的启动参数
 ### 操作系统的核心功能
 todo
 
+## 
 ## 参考资料
 - [鸟哥的 Linux 私房菜：第零章、计算机概论](http://linux.vbird.org/linux_basic/0105computers.php)
