@@ -1,0 +1,1 @@
+todo 鉴于 web compoent 取得了长足发展，因此想单开一篇博客来记录下自己对于 web component 的理解。
