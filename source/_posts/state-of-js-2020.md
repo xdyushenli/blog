@@ -15,6 +15,7 @@ todo 博客
 
 # 特性
 ## 浏览器 API
+todo intl 全称为 ECMASCript Internationalization API
 ### 自定义元素（Custom Elements）
 就支持性来说，还没有达到能在生产环境应用的标准。
 
